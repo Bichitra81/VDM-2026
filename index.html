@@ -1109,6 +1109,73 @@ input[type="date"].mob-filter-control::-webkit-calendar-picker-indicator {
   transition: background 0.15s;
 }
 
+/* ── Shakha Performance Table ── */
+.shk-perf-row {
+  display: grid;
+  grid-template-columns: 32px 1fr auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.035);
+  transition: background 0.15s;
+}
+.shk-perf-row:last-child { border-bottom: none; }
+.shk-perf-row:hover { background: rgba(255,255,255,0.025); }
+.shk-perf-row.top1 { background: rgba(245,166,35,0.06); }
+.shk-perf-row.top2 { background: rgba(192,192,192,0.04); }
+.shk-perf-row.top3 { background: rgba(205,127,50,0.04); }
+.shk-perf-rank {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.25);
+  text-align: center;
+}
+.shk-perf-rank.r1 { color: var(--gold); }
+.shk-perf-rank.r2 { color: #C0C0C0; }
+.shk-perf-rank.r3 { color: #CD7F32; }
+.shk-perf-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-light);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.shk-perf-avg {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gold);
+  white-space: nowrap;
+}
+.shk-perf-meta {
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  text-align: right;
+}
+.shk-perf-bar-wrap {
+  grid-column: 2 / -1;
+  height: 3px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 3px;
+  margin-top: -4px;
+  margin-bottom: 2px;
+}
+.shk-perf-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--saffron), var(--gold));
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+.shk-perf-empty {
+  padding: 30px 14px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 .act-board-row:last-child { border-bottom: none; }
 .act-board-row:hover { background: rgba(255,255,255,0.025); }
 
@@ -1181,6 +1248,10 @@ input[type="date"].mob-filter-control::-webkit-calendar-picker-indicator {
 .act-chart-title.green { color: var(--green); }
 
 .act-chart-wrap { position: relative; height: 180px; }
+#shakhaChart { height: 260px !important; }
+.act-chart-card:has(#shakhaChart) { }
+#shakhaChart ~ * { } /* parent card auto-expands */
+.act-chart-wrap:has(#shakhaChart) { height: 260px; }
 
 /* Inspiration strip */
 .inspire-strip {
@@ -1528,9 +1599,9 @@ input[type="date"].mob-filter-control::-webkit-calendar-picker-indicator {
           <div class="act-chart-title green">Regional Stats</div>
           <div class="act-chart-wrap"><canvas id="countryChart"></canvas></div>
         </div>
-        <div class="act-chart-card">
-          <div class="act-chart-title amber">Top Unit Growth</div>
-          <div class="act-chart-wrap"><canvas id="shakhaChart"></canvas></div>
+        <div class="act-chart-card" id="shakha-perf-card">
+          <div class="act-chart-title amber">🏅 Shakha Performance Index <span style="font-size:10px;opacity:.6;font-weight:400">avg km / participant</span></div>
+          <div id="shakha-perf-table" style="overflow-y:auto;max-height:260px;scrollbar-width:thin;"></div>
         </div>
         <div class="act-chart-card">
           <div class="act-chart-title blue">Age Distribution</div>
@@ -1768,6 +1839,8 @@ const COUNTRY_NAMES = {
 let allRegData = [];
 let regChart;
 let dropdownsBuilt = false;
+// Shared: Shakha name → registered participant count (populated by renderRegistrations)
+let regShakhaMap = {};
 
 function resolveShakha(rawCode) {
   if (!rawCode) return null;
@@ -1852,6 +1925,17 @@ function renderRegistrations(data, selectedCountry, selectedShakha) {
     if (!shakhaMap[name]) shakhaMap[name] = { count:0, country: COUNTRY_NAMES[countryCode] || countryCode };
     shakhaMap[name].count++;
   });
+
+  // Build full (unfiltered) reg counts for the avg-km chart — always use all data
+  regShakhaMap = {};
+  allRegData.forEach(item => {
+    const raw = String(item["Unique Shakha Code"] || "").trim();
+    const resolved = resolveShakha(raw);
+    if (!resolved || resolved.code === "1") return;
+    regShakhaMap[resolved.name] = (regShakhaMap[resolved.name] || 0) + 1;
+  });
+  // If activity data is already loaded, refresh the avg-km chart
+  if (actLoaded && actRawData.length > 0) updateActGraphs(actRawData);
 
   const sorted = Object.entries(shakhaMap).map(([name,d])=>({name,count:d.count,country:d.country})).sort((a,b)=>b.count-a.count);
   const validTotal = sorted.reduce((s,x)=>s+x.count,0);
@@ -2304,11 +2388,58 @@ function updateActGraphs(data) {
   if (!countryChart) countryChart = new Chart(document.getElementById('countryChart'), { type:'bar', data:{labels:cD.l,datasets:[{data:cD.v,backgroundColor:ACT_COLORS.green,borderRadius:4}]}, options:opt });
   else { countryChart.data.labels=cD.l; countryChart.data.datasets[0].data=cD.v; countryChart.update(); }
 
-  const sD = getD(ACT_KEYS.shakha, 5);
-  if (!shakhaChart) {
-    const sOpt = JSON.parse(JSON.stringify(opt)); sOpt.indexAxis='y';
-    shakhaChart = new Chart(document.getElementById('shakhaChart'), { type:'bar', data:{labels:sD.l,datasets:[{data:sD.v,backgroundColor:ACT_COLORS.amber,borderRadius:4}]}, options:sOpt });
-  } else { shakhaChart.data.labels=sD.l; shakhaChart.data.datasets[0].data=sD.v; shakhaChart.update(); }
+  // ── Shakha Performance Index ──
+  // Step 1: total km AND unique participant count per shakha from activity data
+  const shakhaKm        = {};
+  const shakhaParticipants = {}; // shakha → Set of unique participant names
+
+  data.forEach(r => {
+    const name = r[ACT_KEYS.shakha];
+    const participant = r[ACT_KEYS.name];
+    if (!name) return;
+    shakhaKm[name] = (shakhaKm[name] || 0) + (parseFloat(r[ACT_KEYS.count]) || 0);
+    if (!shakhaParticipants[name]) shakhaParticipants[name] = new Set();
+    if (participant) shakhaParticipants[name].add(participant);
+  });
+
+  // Step 2: compute avg km per unique participant, rank descending
+  const perfEntries = Object.keys(shakhaKm)
+    .map(name => {
+      const totalKm    = shakhaKm[name];
+      const numPeople  = (shakhaParticipants[name] || new Set()).size || 1;
+      const avg        = totalKm / numPeople;
+      return { name, totalKm, numPeople, avg };
+    })
+    .filter(e => e.avg > 0)
+    .sort((a, b) => b.avg - a.avg);
+
+  // Step 3: render ranked table
+  const perfContainer = document.getElementById('shakha-perf-table');
+  if (perfContainer) {
+    if (perfEntries.length === 0) {
+      perfContainer.innerHTML = '<div class="shk-perf-empty">No shakha data available</div>';
+    } else {
+      const maxAvg = perfEntries[0].avg;
+      const rankEmoji = ['🥇','🥈','🥉'];
+      const rankCls   = ['r1','r2','r3'];
+      perfContainer.innerHTML = perfEntries.map((e, i) => {
+        const barPct  = ((e.avg / maxAvg) * 100).toFixed(1);
+        const rCls    = i < 3 ? rankCls[i] : '';
+        const rowCls  = i < 3 ? `top${i+1}` : '';
+        const rankLbl = i < 3 ? rankEmoji[i] : String(i + 1).padStart(2, '0');
+        return `
+        <div class="shk-perf-row ${rowCls}">
+          <span class="shk-perf-rank ${rCls}">${rankLbl}</span>
+          <span class="shk-perf-name" title="${e.name}">${e.name}</span>
+          <span class="shk-perf-avg">${e.avg.toFixed(1)} km</span>
+          <span class="shk-perf-meta">${e.numPeople} pax · ${e.totalKm.toFixed(0)} km</span>
+          <div style="grid-column:2/-1;height:3px;background:rgba(255,255,255,0.06);border-radius:3px;margin-top:-2px;">
+            <div style="width:${barPct}%;height:100%;background:linear-gradient(90deg,var(--saffron),var(--gold));border-radius:3px;"></div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
 
   const aD = getD(ACT_KEYS.age);
   if (!ageChart) ageChart = new Chart(document.getElementById('ageChart'), { type:'bar', data:{labels:aD.l,datasets:[{data:aD.v,backgroundColor:ACT_COLORS.blue,borderRadius:4}]}, options:opt });
