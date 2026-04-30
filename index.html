@@ -1308,12 +1308,7 @@ input[type="date"].mob-filter-control::-webkit-calendar-picker-indicator {
     </div>
 
     <nav class="tab-bar">
-      <button class="tab-btn active" id="tab-reg" onclick="switchTab('reg')">
-        <span class="tab-icon">🏛</span>
-        Registrations
-        <span class="tab-badge" id="reg-badge">LIVE</span>
-      </button>
-      <button class="tab-btn" id="tab-act" onclick="switchTab('act')">
+      <button class="tab-btn active" id="tab-act" onclick="switchTab('act')">
         <span class="tab-icon">🏃</span>
         Activity Log
         <span class="tab-badge" id="act-badge">LIVE</span>
@@ -1322,6 +1317,11 @@ input[type="date"].mob-filter-control::-webkit-calendar-picker-indicator {
         <span class="tab-icon">⚙️</span>
         <span class="tab-filter-mobile-label">Filters</span>
         <span class="tab-badge" id="filters-badge" style="display:none;"></span>
+      </button>
+      <button class="tab-btn" id="tab-reg" onclick="switchTab('reg')">
+        <span class="tab-icon">🏛</span>
+        Registrations
+        <span class="tab-badge" id="reg-badge">LIVE</span>
       </button>
     </nav>
 
@@ -1335,7 +1335,7 @@ input[type="date"].mob-filter-control::-webkit-calendar-picker-indicator {
 <!-- ══════════════════════════════════════
      TAB 1: REGISTRATIONS
 ══════════════════════════════════════ -->
-<div class="tab-panel active" id="panel-reg">
+<div class="tab-panel" id="panel-reg">
 
   <!-- Filters -->
   <div class="filters-bar">
@@ -1453,7 +1453,7 @@ input[type="date"].mob-filter-control::-webkit-calendar-picker-indicator {
 <!-- ══════════════════════════════════════
      TAB 2: ACTIVITY LOG
 ══════════════════════════════════════ -->
-<div class="tab-panel" id="panel-act">
+<div class="tab-panel active" id="panel-act">
 
   <!-- Desktop filter bar (hidden on mobile via CSS) -->
   <div class="act-filters-bar">
@@ -1651,12 +1651,12 @@ function switchTab(id) {
   document.getElementById('tab-' + id).classList.add('active');
   document.getElementById('panel-' + id).classList.add('active');
 
-  // Lazy-load activity data when visiting act or filters tab
   if ((id === 'act' || id === 'filters') && !actLoaded) {
     initActivity();
   }
-
-  // When opening the Filters panel, sync mobile fields from desktop state
+  if (id === 'reg' && !regLoaded) {
+    initRegistrations();
+  }
   if (id === 'filters') {
     syncMobFromDesktop();
   }
@@ -1962,6 +1962,15 @@ function renderTable(sorted) {
   }).join("");
 }
 
+let regLoaded = false;
+
+function initRegistrations() {
+  if (regLoaded) return;
+  regLoaded = true;
+  loadRegData();
+  setInterval(loadRegData, 30000);
+}
+
 async function loadRegData() {
   try {
     const res = await fetch(REG_API);
@@ -1979,8 +1988,8 @@ async function loadRegData() {
   }
 }
 
-loadRegData();
-setInterval(loadRegData, 30000);
+// Activity Log is the default tab — load it on startup
+initActivity();
 
 
 /* ═══════════════════════════════════════════
@@ -2014,6 +2023,7 @@ async function initActivity() {
     });
 
     actLoaded = true;
+    document.getElementById('appLoader').classList.add('hidden');
     document.getElementById('actStatusBadge').textContent = `LIVE · ${actRawData.length} ENTRIES`;
     document.getElementById('act-loader').style.display = 'none';
     document.getElementById('act-content').style.display = 'block';
