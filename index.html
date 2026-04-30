@@ -702,6 +702,7 @@ body::before {
    ── TAB 2: ACTIVITY LOG ──
 ═══════════════════════════════════════════════ */
 
+/* ── Desktop filter bar (hidden on mobile) ── */
 .act-filters-bar {
   background: rgba(15,31,61,0.8);
   backdrop-filter: blur(10px);
@@ -714,10 +715,242 @@ body::before {
 .act-filters-inner {
   max-width: 1440px;
   margin: auto;
-  padding: 14px 28px;
+  padding: 12px 28px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: 1.4fr 1.1fr 1fr 1.4fr 1.2fr 110px 110px auto;
   gap: 10px;
+  align-items: end;
+}
+
+@media (max-width: 1200px) {
+  .act-filters-inner { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* ── Mobile: hide desktop filter bar entirely ── */
+@media (max-width: 768px) {
+  .act-filters-bar { display: none; }
+}
+
+/* ── Active filter chips bar (mobile only) ── */
+.act-chips-bar {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .act-chips-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: rgba(15,31,61,0.9);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    position: sticky;
+    top: 64px;
+    z-index: 99;
+    scrollbar-width: none;
+  }
+  .act-chips-bar::-webkit-scrollbar { display: none; }
+}
+
+.act-chips-empty {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.act-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(232,87,26,0.15);
+  border: 1px solid rgba(232,87,26,0.35);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--saffron-light);
+  white-space: nowrap;
+  cursor: default;
+}
+
+.act-chip-x {
+  background: none;
+  border: none;
+  color: var(--saffron);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 0;
+  margin-left: 2px;
+}
+
+.act-chips-open-btn {
+  margin-left: auto;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(232,87,26,0.1);
+  border: 1px solid rgba(232,87,26,0.3);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--saffron-light);
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: 'Outfit', sans-serif;
+}
+
+/* ── Tab 3: Filters panel (mobile only panel, desktop keeps inline) ── */
+.tab-filter-mobile-label {
+  display: none;
+}
+@media (max-width: 768px) {
+  .tab-filter-mobile-label { display: inline; }
+}
+
+#panel-filters {
+  min-height: 80vh;
+}
+
+.mob-filters-wrap {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 24px 20px 80px;
+}
+
+.mob-filters-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-white);
+  margin-bottom: 6px;
+}
+
+.mob-filters-sub {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.mob-filter-section {
+  margin-bottom: 18px;
+}
+
+.mob-filter-label {
+  font-size: 9.5px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 700;
+  margin-bottom: 7px;
+  display: block;
+}
+
+.mob-filter-control {
+  background: var(--navy-card);
+  color: var(--text-white);
+  border: 1px solid var(--border-bright);
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 14px;
+  font-family: 'Outfit', sans-serif;
+  width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.mob-filter-control:focus {
+  outline: none;
+  border-color: var(--saffron);
+  box-shadow: 0 0 0 3px rgba(232,87,26,0.15);
+}
+
+select.mob-filter-control {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237A96BC' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+.mob-filter-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+input[type="date"].mob-filter-control {
+  color-scheme: dark;
+}
+
+input[type="date"].mob-filter-control::-webkit-calendar-picker-indicator {
+  filter: invert(0.6) sepia(1) hue-rotate(180deg);
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.mob-filter-actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(8,21,43,0.97);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border-bright);
+  padding: 14px 20px;
+  display: flex;
+  gap: 10px;
+  z-index: 300;
+}
+
+.mob-apply-btn {
+  flex: 1;
+  background: linear-gradient(135deg, var(--saffron), var(--gold));
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 14px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.mob-apply-btn:active { transform: scale(0.97); opacity: 0.9; }
+
+.mob-reset-btn-mob {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-bright);
+  border-radius: 10px;
+  padding: 14px 20px;
+  font-size: 13px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.mob-reset-btn-mob:hover, .mob-reset-btn-mob:active {
+  border-color: var(--saffron);
+  color: var(--saffron);
+}
+
+/* Hide mobile filter tab button on desktop */
+@media (min-width: 769px) {
+  #tab-filters { display: none !important; }
+  #panel-filters { display: none !important; }
+  .mob-filter-actions { display: none !important; }
 }
 
 .act-filter-group { display: flex; flex-direction: column; gap: 5px; }
@@ -773,20 +1006,41 @@ body::before {
   box-shadow: 0 0 0 3px rgba(232,87,26,0.15);
 }
 
-/* Act Status badge */
-.act-status {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 12px;
+.act-filter-date {
+  color-scheme: dark;
+  min-width: 0;
+}
+
+.act-filter-date::-webkit-calendar-picker-indicator {
+  filter: invert(0.6) sepia(1) hue-rotate(180deg);
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.act-filter-date::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+.act-reset-btn {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-bright);
   border-radius: 8px;
-  background: rgba(6,214,160,0.08);
-  border: 1px solid rgba(6,214,160,0.2);
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--green);
-  letter-spacing: 1px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
   white-space: nowrap;
+  width: 100%;
+  letter-spacing: 0.3px;
+}
+
+.act-reset-btn:hover {
+  border-color: var(--saffron);
+  color: var(--saffron);
+  background: rgba(232,87,26,0.06);
 }
 
 /* Act Main */
@@ -1017,17 +1271,15 @@ body::before {
   .header-inner { padding: 0 16px; }
   .panel-main, .act-main { padding: 18px 16px 48px; }
   .filters-inner { padding: 10px 16px; }
-  .act-filters-inner { padding: 12px 16px; grid-template-columns: 1fr 1fr; }
   .brand-text-title { font-size: 18px; }
-  .tab-btn { padding: 0 14px; font-size: 11.5px; }
+  .tab-btn { padding: 0 12px; font-size: 11.5px; }
   .tab-btn .tab-icon { display: none; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 480px) {
-  .tab-btn { padding: 0 10px; font-size: 11px; }
+  .tab-btn { padding: 0 9px; font-size: 10.5px; }
   .stats-grid { grid-template-columns: 1fr; }
-  .act-filters-inner { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -1065,6 +1317,11 @@ body::before {
         <span class="tab-icon">🏃</span>
         Activity Log
         <span class="tab-badge" id="act-badge">LIVE</span>
+      </button>
+      <button class="tab-btn" id="tab-filters" onclick="switchTab('filters')">
+        <span class="tab-icon">⚙️</span>
+        <span class="tab-filter-mobile-label">Filters</span>
+        <span class="tab-badge" id="filters-badge" style="display:none;"></span>
       </button>
     </nav>
 
@@ -1198,7 +1455,7 @@ body::before {
 ══════════════════════════════════════ -->
 <div class="tab-panel" id="panel-act">
 
-  <!-- Filters -->
+  <!-- Desktop filter bar (hidden on mobile via CSS) -->
   <div class="act-filters-bar">
     <div class="act-filters-inner">
       <div class="act-filter-group">
@@ -1214,21 +1471,32 @@ body::before {
         <select id="f-age" class="act-filter-select"><option value="">All Ages</option></select>
       </div>
       <div class="act-filter-group">
-        <label class="act-filter-label">Country</label>
-        <select id="f-country" class="act-filter-select"><option value="">Global</option></select>
-      </div>
-      <div class="act-filter-group">
-        <label class="act-filter-label">City</label>
-        <select id="f-city" class="act-filter-select"><option value="">All Cities</option></select>
+        <label class="act-filter-label">Location (Country · City)</label>
+        <select id="f-location" class="act-filter-select"><option value="">🌍 All Locations</option></select>
       </div>
       <div class="act-filter-group">
         <label class="act-filter-label">Shakha Unit</label>
         <select id="f-shakha" class="act-filter-select"><option value="">All Units</option></select>
       </div>
-      <div class="act-filter-group" style="align-self: end;">
+      <div class="act-filter-group">
+        <label class="act-filter-label">From Date</label>
+        <input type="date" id="f-date-from" class="act-filter-input act-filter-date">
+      </div>
+      <div class="act-filter-group">
+        <label class="act-filter-label">To Date</label>
+        <input type="date" id="f-date-to" class="act-filter-input act-filter-date">
+      </div>
+      <div class="act-filter-group" style="align-self: end; gap: 8px;">
         <div class="act-status" id="actStatusBadge">— —</div>
+        <button class="act-reset-btn" onclick="resetActFilters()">↺ Reset Filters</button>
       </div>
     </div>
+  </div>
+
+  <!-- Mobile active-filter chips bar -->
+  <div class="act-chips-bar" id="actChipsBar">
+    <span class="act-chips-empty" id="actChipsEmpty">No filters active</span>
+    <button class="act-chips-open-btn" onclick="switchTab('filters')">⚙️ Filters</button>
   </div>
 
   <!-- Main -->
@@ -1309,6 +1577,62 @@ body::before {
   </div><!-- /act-main -->
 </div><!-- /panel-act -->
 
+
+<!-- ══════════════════════════════════════
+     TAB 3: FILTERS (mobile only)
+══════════════════════════════════════ -->
+<div class="tab-panel" id="panel-filters">
+  <div class="mob-filters-wrap">
+    <div class="mob-filters-title">⚙️ Filter Activity Log</div>
+    <div class="mob-filters-sub">Set filters below, then tap Apply to see results.</div>
+
+    <div class="mob-filter-section">
+      <label class="mob-filter-label">Participant Name</label>
+      <input type="text" id="mf-name" placeholder="Search name…" class="mob-filter-control">
+    </div>
+
+    <div class="mob-filter-section">
+      <label class="mob-filter-label">Activity Type</label>
+      <select id="mf-activity" class="mob-filter-control"><option value="">All Types</option></select>
+    </div>
+
+    <div class="mob-filter-section">
+      <label class="mob-filter-label">Age Group</label>
+      <select id="mf-age" class="mob-filter-control"><option value="">All Ages</option></select>
+    </div>
+
+    <div class="mob-filter-section">
+      <label class="mob-filter-label">Location (Country · City)</label>
+      <select id="mf-location" class="mob-filter-control"><option value="">🌍 All Locations</option></select>
+    </div>
+
+    <div class="mob-filter-section">
+      <label class="mob-filter-label">Shakha Unit</label>
+      <select id="mf-shakha" class="mob-filter-control"><option value="">All Units</option></select>
+    </div>
+
+    <div class="mob-filter-section">
+      <label class="mob-filter-label">Date Range</label>
+      <div class="mob-filter-row-2">
+        <div>
+          <label class="mob-filter-label" style="margin-bottom:5px;">From</label>
+          <input type="date" id="mf-date-from" class="mob-filter-control">
+        </div>
+        <div>
+          <label class="mob-filter-label" style="margin-bottom:5px;">To</label>
+          <input type="date" id="mf-date-to" class="mob-filter-control">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sticky bottom action bar -->
+  <div class="mob-filter-actions">
+    <button class="mob-reset-btn-mob" onclick="mobResetFilters()">↺ Reset</button>
+    <button class="mob-apply-btn" onclick="mobApplyFilters()">✓ Apply Filters</button>
+  </div>
+</div><!-- /panel-filters -->
+
 <footer class="app-footer">
   VDM 2026 · Vishwa Dharma Marathon · Global Leadership Dashboard
 </footer>
@@ -1327,9 +1651,14 @@ function switchTab(id) {
   document.getElementById('tab-' + id).classList.add('active');
   document.getElementById('panel-' + id).classList.add('active');
 
-  // Lazy-load activity data
-  if (id === 'act' && !actLoaded) {
+  // Lazy-load activity data when visiting act or filters tab
+  if ((id === 'act' || id === 'filters') && !actLoaded) {
     initActivity();
+  }
+
+  // When opening the Filters panel, sync mobile fields from desktop state
+  if (id === 'filters') {
+    syncMobFromDesktop();
   }
 }
 
@@ -1661,7 +1990,8 @@ const ACT_API = 'https://script.google.com/macros/s/AKfycbwUTFQLdeUVNZO6lJBcjBDK
 
 const ACT_KEYS = {
   name: "User Name", shakha: "Shakha Name", country: "Country",
-  city: "User City", activity: "Activity Name", age: "User Age Group", count: "Count"
+  city: "User City", activity: "Activity Name", age: "User Age Group", count: "Count",
+  date: "Date"
 };
 
 const ACT_COLORS = {
@@ -1697,42 +2027,221 @@ async function initActivity() {
 
 function setupActFilters() {
   const getU = (key) => [...new Set(actRawData.map(r=>r[key]))].filter(Boolean).sort();
-  const fill = (id, vals) => {
-    const el = document.getElementById(id);
-    vals.forEach(v => { const o=document.createElement('option'); o.value=v; o.textContent=v; el.appendChild(o); });
-  };
-  fill('f-activity', getU(ACT_KEYS.activity));
-  fill('f-age',      getU(ACT_KEYS.age));
-  fill('f-country',  getU(ACT_KEYS.country));
-  fill('f-city',     getU(ACT_KEYS.city));
-  fill('f-shakha',   getU(ACT_KEYS.shakha));
 
+  // Helper: fill both desktop and mobile selects with same options
+  const fillBoth = (deskId, mobId, vals) => {
+    [deskId, mobId].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      vals.forEach(v => { const o=document.createElement('option'); o.value=v; o.textContent=v; el.appendChild(o); });
+    });
+  };
+
+  fillBoth('f-activity', 'mf-activity', getU(ACT_KEYS.activity));
+  fillBoth('f-age',      'mf-age',      getU(ACT_KEYS.age));
+  fillBoth('f-shakha',   'mf-shakha',   getU(ACT_KEYS.shakha));
+
+  // Build merged Country · City options for both desktop and mobile
+  const locationSet = new Set();
+  actRawData.forEach(r => {
+    const country = (r[ACT_KEYS.country] || "").trim();
+    const city    = (r[ACT_KEYS.city]    || "").trim();
+    if (country && city) locationSet.add(`${country} · ${city}`);
+    else if (country)    locationSet.add(country);
+  });
+  const locVals = [...locationSet].sort();
+  ['f-location', 'mf-location'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    locVals.forEach(loc => { const o=document.createElement('option'); o.value=loc; o.textContent=loc; el.appendChild(o); });
+  });
+
+  // Desktop filter listeners
   document.querySelectorAll('#panel-act input, #panel-act select').forEach(el => el.addEventListener('input', renderActivity));
+  document.getElementById('f-date-from').addEventListener('change', renderActivity);
+  document.getElementById('f-date-to').addEventListener('change', renderActivity);
+}
+
+// ── Sync mobile filter fields FROM current desktop filter state ──
+function syncMobFromDesktop() {
+  document.getElementById('mf-name').value      = document.getElementById('f-name').value;
+  document.getElementById('mf-activity').value  = document.getElementById('f-activity').value;
+  document.getElementById('mf-age').value       = document.getElementById('f-age').value;
+  document.getElementById('mf-location').value  = document.getElementById('f-location').value;
+  document.getElementById('mf-shakha').value    = document.getElementById('f-shakha').value;
+  document.getElementById('mf-date-from').value = document.getElementById('f-date-from').value;
+  document.getElementById('mf-date-to').value   = document.getElementById('f-date-to').value;
+}
+
+// ── Apply mobile filters → push to desktop fields → re-render → go to Activity Log ──
+function mobApplyFilters() {
+  document.getElementById('f-name').value      = document.getElementById('mf-name').value;
+  document.getElementById('f-activity').value  = document.getElementById('mf-activity').value;
+  document.getElementById('f-age').value       = document.getElementById('mf-age').value;
+  document.getElementById('f-location').value  = document.getElementById('mf-location').value;
+  document.getElementById('f-shakha').value    = document.getElementById('mf-shakha').value;
+  document.getElementById('f-date-from').value = document.getElementById('mf-date-from').value;
+  document.getElementById('f-date-to').value   = document.getElementById('mf-date-to').value;
+
+  renderActivity();
+  updateChipsBar();
+  switchTab('act');
+}
+
+// ── Reset all mobile filter fields + desktop fields ──
+function mobResetFilters() {
+  ['mf-name','mf-activity','mf-age','mf-location','mf-shakha','mf-date-from','mf-date-to']
+    .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  resetActFilters();
+}
+
+// ── Update the chips bar shown at top of Activity Log on mobile ──
+function updateChipsBar() {
+  const bar   = document.getElementById('actChipsBar');
+  const empty = document.getElementById('actChipsEmpty');
+  if (!bar) return;
+
+  const defs = [
+    { id: 'f-name',      label: v => `"${v}"` },
+    { id: 'f-activity',  label: v => v },
+    { id: 'f-age',       label: v => v },
+    { id: 'f-location',  label: v => `📍 ${v}` },
+    { id: 'f-shakha',    label: v => v },
+    { id: 'f-date-from', label: v => `From ${v}` },
+    { id: 'f-date-to',   label: v => `To ${v}` },
+  ];
+
+  // Remove existing chips (keep empty span and open button)
+  bar.querySelectorAll('.act-chip').forEach(c => c.remove());
+
+  const activeChips = defs.filter(d => document.getElementById(d.id)?.value?.trim());
+
+  if (activeChips.length === 0) {
+    empty.style.display = '';
+  } else {
+    empty.style.display = 'none';
+    activeChips.forEach(d => {
+      const val = document.getElementById(d.id).value.trim();
+      const chip = document.createElement('span');
+      chip.className = 'act-chip';
+      chip.innerHTML = `${d.label(val)}<button class="act-chip-x" title="Remove filter">✕</button>`;
+      chip.querySelector('.act-chip-x').onclick = () => {
+        document.getElementById(d.id).value = '';
+        // Also clear matching mobile field
+        const mobId = d.id.replace('f-', 'mf-');
+        const mob = document.getElementById(mobId);
+        if (mob) mob.value = '';
+        renderActivity();
+        updateChipsBar();
+      };
+      // Insert before the open button
+      bar.insertBefore(chip, bar.querySelector('.act-chips-open-btn'));
+    });
+  }
+
+  // Update filters-badge count on tab button
+  const badge = document.getElementById('filters-badge');
+  if (badge) {
+    if (activeChips.length > 0) {
+      badge.textContent = activeChips.length;
+      badge.style.display = 'inline-block';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+}
+
+function resetActFilters() {
+  ['f-name','f-activity','f-age','f-location','f-shakha','f-date-from','f-date-to']
+    .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  ['mf-name','mf-activity','mf-age','mf-location','mf-shakha','mf-date-from','mf-date-to']
+    .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  renderActivity();
+  updateChipsBar();
 }
 
 function renderActivity() {
   const filters = {
-    name: document.getElementById('f-name').value.toLowerCase(),
-    act:  document.getElementById('f-activity').value,
-    age:  document.getElementById('f-age').value,
-    cnt:  document.getElementById('f-country').value,
-    cty:  document.getElementById('f-city').value,
-    shk:  document.getElementById('f-shakha').value
+    name:     document.getElementById('f-name').value.toLowerCase(),
+    act:      document.getElementById('f-activity').value,
+    age:      document.getElementById('f-age').value,
+    location: document.getElementById('f-location').value,
+    shk:      document.getElementById('f-shakha').value,
+    dateFrom: document.getElementById('f-date-from').value,
+    dateTo:   document.getElementById('f-date-to').value
   };
 
-  const filtered = actRawData.filter(r =>
-    (!filters.name || (r[ACT_KEYS.name]||"").toLowerCase().includes(filters.name)) &&
-    (!filters.act  || r[ACT_KEYS.activity] === filters.act) &&
-    (!filters.age  || r[ACT_KEYS.age] === filters.age) &&
-    (!filters.cnt  || r[ACT_KEYS.country] === filters.cnt) &&
-    (!filters.cty  || r[ACT_KEYS.city] === filters.cty) &&
-    (!filters.shk  || r[ACT_KEYS.shakha] === filters.shk)
-  );
+  // Detect date column once from first row that has one
+  let detectedDateKey = ACT_KEYS.date;
+  if (actRawData.length > 0 && !actRawData[0].hasOwnProperty(detectedDateKey)) {
+    detectedDateKey = Object.keys(actRawData[0]).find(k => /date|time|when/i.test(k)) || null;
+  }
+
+  const dateFrom = filters.dateFrom ? new Date(filters.dateFrom + 'T00:00:00') : null;
+  const dateTo   = filters.dateTo   ? new Date(filters.dateTo   + 'T23:59:59') : null;
+
+  const filtered = actRawData.filter(r => {
+    if (filters.name && !(r[ACT_KEYS.name]||"").toLowerCase().includes(filters.name)) return false;
+    if (filters.act  && r[ACT_KEYS.activity] !== filters.act) return false;
+    if (filters.age  && r[ACT_KEYS.age] !== filters.age) return false;
+    if (filters.shk  && r[ACT_KEYS.shakha] !== filters.shk) return false;
+
+    if (filters.location) {
+      const country = (r[ACT_KEYS.country] || "").trim();
+      const city    = (r[ACT_KEYS.city]    || "").trim();
+      const rowLoc  = country && city ? `${country} · ${city}` : country;
+      if (rowLoc !== filters.location) return false;
+    }
+
+    if (dateFrom || dateTo) {
+      // Try known key, then scan all keys for any date-like field
+      const rawDate = detectedDateKey ? r[detectedDateKey] : null;
+      if (rawDate == null || rawDate === "") return false; // no date = exclude when filtering
+      const rowDate = parseFlexDate(rawDate);
+      if (!rowDate) return false;
+      if (dateFrom && rowDate < dateFrom) return false;
+      if (dateTo   && rowDate > dateTo)   return false;
+    }
+
+    return true;
+  });
+
+  // Update status badge to reflect current filtered count
+  const isFiltered = filters.name || filters.act || filters.age || filters.location ||
+                     filters.shk || filters.dateFrom || filters.dateTo;
+  document.getElementById('actStatusBadge').textContent = isFiltered
+    ? `FILTERED · ${filtered.length} ENTRIES`
+    : `LIVE · ${actRawData.length} ENTRIES`;
 
   renderActBoard('lb-person',  filtered, ACT_KEYS.name,   'blue');
   renderActBoard('lb-shakha',  filtered, ACT_KEYS.shakha,  'amber');
   renderActBoard('lb-country', filtered, ACT_KEYS.country, 'green');
   updateActGraphs(filtered);
+  updateChipsBar();
+}
+
+// Flexible date parser: YYYY-MM-DD, DD/MM/YYYY, MM/DD/YYYY, Google Sheets timestamps
+function parseFlexDate(val) {
+  if (!val) return null;
+  const s = String(val).trim();
+  // YYYY-MM-DD (ISO)
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return new Date(s.slice(0, 10));
+  // DD/MM/YYYY or DD-MM-YYYY
+  const dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  if (dmy) {
+    const d = parseInt(dmy[1]), mo = parseInt(dmy[2]), yr = parseInt(dmy[3]);
+    // If month > 12 it must be day/month swap
+    if (mo <= 12) return new Date(`${yr}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`);
+  }
+  // Google Sheets serial number (days since Dec 30, 1899)
+  if (/^\d{5}$/.test(s)) {
+    const epoch = new Date(1899, 11, 30);
+    epoch.setDate(epoch.getDate() + parseInt(s));
+    return epoch;
+  }
+  // Fallback: let JS try
+  const d = new Date(s);
+  return isNaN(d) ? null : d;
 }
 
 function renderActBoard(id, data, key, colorClass) {
