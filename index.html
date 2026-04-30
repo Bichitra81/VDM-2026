@@ -1980,6 +1980,7 @@ async function loadRegData() {
     applyFilters();
     document.getElementById("appLoader").classList.add("hidden");
   } catch (err) {
+    document.getElementById("appLoader").classList.add("hidden");
     document.getElementById("appLoader").innerHTML = `
       <div style="font-size:48px">⚠️</div>
       <div style="color:var(--red);font-size:15px">Failed to load data</div>
@@ -1988,8 +1989,7 @@ async function loadRegData() {
   }
 }
 
-// Activity Log is the default tab — load it on startup
-initActivity();
+// Activity Log is the default tab — loaded at bottom of script after all functions are defined
 
 
 /* ═══════════════════════════════════════════
@@ -2012,6 +2012,9 @@ let actRawData = [];
 let countryChart, shakhaChart, ageChart;
 let actLoaded = false;
 
+// Safety net: always dismiss the loading overlay after 8 seconds no matter what
+setTimeout(() => { document.getElementById('appLoader').classList.add('hidden'); }, 8000);
+
 async function initActivity() {
   try {
     const res = await fetch(ACT_API);
@@ -2031,7 +2034,8 @@ async function initActivity() {
     setupActFilters();
     renderActivity();
   } catch(e) {
-    document.getElementById('act-loader').textContent = 'OFFLINE · Could not load data';
+    document.getElementById('appLoader').classList.add('hidden');
+    document.getElementById('act-loader').textContent = 'OFFLINE · Could not load activity data';
   }
 }
 
@@ -2310,6 +2314,10 @@ function updateActGraphs(data) {
   if (!ageChart) ageChart = new Chart(document.getElementById('ageChart'), { type:'bar', data:{labels:aD.l,datasets:[{data:aD.v,backgroundColor:ACT_COLORS.blue,borderRadius:4}]}, options:opt });
   else { ageChart.data.labels=aD.l; ageChart.data.datasets[0].data=aD.v; ageChart.update(); }
 }
+
+// ── Startup: Activity Log is default tab, load its data immediately ──
+initActivity();
+
 </script>
 
 </body>
