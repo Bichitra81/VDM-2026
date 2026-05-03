@@ -1009,6 +1009,334 @@ body::before {
   .streak-count-pill { font-size: 18px; padding: 2px 12px; }
 }
 
+/* ═══════════════════════════════════════════════
+   MARATHON GOAL BANNER
+═══════════════════════════════════════════════ */
+.goal-banner {
+  background: linear-gradient(135deg, var(--navy-card) 0%, var(--navy-light) 100%);
+  border: 1px solid var(--border-bright);
+  border-radius: 14px;
+  padding: 22px 26px;
+  margin-bottom: 18px;
+  position: relative;
+  overflow: hidden;
+}
+.goal-banner::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 4px; height: 100%;
+  background: linear-gradient(180deg, var(--saffron), var(--gold));
+}
+.goal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 14px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.goal-title {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.goal-title em {
+  font-style: normal;
+  background: linear-gradient(90deg, var(--saffron), var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.goal-numbers {
+  font-family: 'Rajdhani', sans-serif;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.goal-current {
+  font-size: 38px;
+  font-weight: 700;
+  color: var(--text-white);
+  letter-spacing: 0.5px;
+  line-height: 1;
+}
+.goal-target {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.goal-pct-pill {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gold);
+  background: rgba(245,166,35,0.12);
+  border: 1px solid rgba(245,166,35,0.35);
+  border-radius: 999px;
+  padding: 6px 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.goal-track {
+  height: 14px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+.goal-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--saffron), var(--gold));
+  border-radius: 999px;
+  transition: width 1.2s ease;
+  position: relative;
+}
+.goal-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  animation: goal-shimmer 2.4s linear infinite;
+}
+@keyframes goal-shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.goal-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+/* ═══════════════════════════════════════════════
+   DISTRIBUTION PIE CARD
+═══════════════════════════════════════════════ */
+.dist-card {
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 26px;
+  margin-bottom: 18px;
+}
+.dist-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.dist-title {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  font-weight: 600;
+}
+.dist-title em {
+  font-style: normal;
+  color: var(--saffron);
+}
+.dist-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.3px;
+}
+.dist-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: center;
+}
+.dist-canvas-wrap {
+  position: relative;
+  height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dist-center {
+  position: absolute;
+  pointer-events: none;
+  text-align: center;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.dist-center-num {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-white);
+  line-height: 1;
+}
+.dist-center-lbl {
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+.dist-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+.dist-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.dist-dot {
+  width: 12px; height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.dist-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-light);
+}
+.dist-km {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  color: var(--text-white);
+  font-size: 15px;
+}
+.dist-pct {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+  background: rgba(255,255,255,0.04);
+  padding: 2px 7px;
+  border-radius: 999px;
+  min-width: 42px;
+  text-align: center;
+}
+@media (max-width: 768px) {
+  .goal-current { font-size: 30px; }
+  .goal-pct-pill { font-size: 18px; padding: 4px 14px; }
+  .dist-body { grid-template-columns: 1fr; gap: 16px; }
+  .dist-canvas-wrap { height: 200px; }
+}
+
+/* ═══════════════════════════════════════════════
+   ACTIVITY TYPE FILTER + TOP 5 LEADERBOARDS
+═══════════════════════════════════════════════ */
+.type-filter-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 14px 16px;
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.type-filter-label {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+  margin-right: 6px;
+}
+.type-chip {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-bright);
+  color: var(--text-light);
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.type-chip:hover {
+  background: rgba(255,255,255,0.07);
+  border-color: rgba(255,255,255,0.2);
+}
+.type-chip.active {
+  background: linear-gradient(135deg, var(--saffron), var(--gold));
+  border-color: transparent;
+  color: #1a1a1a;
+}
+.type-chip-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.type-chip.active .type-chip-dot { display: none; }
+
+.top5-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+@media (max-width: 900px) {
+  .top5-grid { grid-template-columns: 1fr; }
+}
+.top5-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  margin-bottom: 6px;
+  transition: background 0.15s ease;
+}
+.top5-row:hover { background: rgba(255,255,255,0.03); }
+.top5-medal {
+  font-size: 18px;
+  width: 26px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.top5-rank {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-muted);
+  width: 26px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.top5-km {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gold);
+  background: rgba(245,166,35,0.1);
+  border: 1px solid rgba(245,166,35,0.3);
+  padding: 4px 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  min-width: 70px;
+  text-align: center;
+}
+
 /* PODIUM */
 .podium-section {
   background: var(--navy-card);
@@ -2094,11 +2422,11 @@ input[type="date"].mob-filter-control::-webkit-calendar-picker-indicator {
         <select id="f-shakha" class="act-filter-select"><option value="">All Units</option></select>
       </div>
       <div class="act-filter-group">
-        <label class="act-filter-label">From Date</label>
+        <label class="act-filter-label">From Date <span style="opacity:0.55;font-weight:400;font-size:9.5px;">(DD/MM/YYYY)</span></label>
         <input type="date" id="f-date-from" class="act-filter-input act-filter-date">
       </div>
       <div class="act-filter-group">
-        <label class="act-filter-label">To Date</label>
+        <label class="act-filter-label">To Date <span style="opacity:0.55;font-weight:400;font-size:9.5px;">(DD/MM/YYYY)</span></label>
         <input type="date" id="f-date-to" class="act-filter-input act-filter-date">
       </div>
       <div class="act-filter-group" style="align-self: end; gap: 8px;">
@@ -2209,6 +2537,90 @@ input[type="date"].mob-filter-control::-webkit-calendar-picker-indicator {
     <p class="streaks-sub">Celebrating the participants powering Vishwa Dharma Marathon — first-time joiners today and the unstoppable daily streak holders.</p>
   </div>
 
+  <!-- Marathon Goal Banner -->
+  <div class="goal-banner">
+    <div class="goal-head">
+      <div>
+        <div class="goal-title">🎯 Marathon <em>Goal</em> — 75,000 km</div>
+        <div class="goal-numbers">
+          <span class="goal-current" id="goalCurrent">0</span>
+          <span class="goal-target">/ 75,000 km</span>
+        </div>
+      </div>
+      <div class="goal-pct-pill" id="goalPct">0%</div>
+    </div>
+    <div class="goal-track">
+      <div class="goal-fill" id="goalFill" style="width:0%"></div>
+    </div>
+    <div class="goal-meta">
+      <span id="goalRemaining">75,000 km to go</span>
+      <span>Combined Running · Cycling · Walking · Swimming</span>
+    </div>
+  </div>
+
+  <!-- Distribution Pie Chart -->
+  <div class="dist-card">
+    <div class="dist-head">
+      <div>
+        <div class="dist-title">🥧 Distribution by <em>Activity Type</em></div>
+        <div class="dist-sub">Share of total kilometres logged so far</div>
+      </div>
+    </div>
+    <div class="dist-body">
+      <div class="dist-canvas-wrap">
+        <canvas id="distChart"></canvas>
+        <div class="dist-center">
+          <div class="dist-center-num" id="distCenterNum">0</div>
+          <div class="dist-center-lbl">km total</div>
+        </div>
+      </div>
+      <div class="dist-legend" id="distLegend">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity Type Filter (controls the Top 5 leaderboards) -->
+  <div class="type-filter-bar" id="typeFilterBar" role="tablist" aria-label="Filter top 5 by activity type">
+    <span class="type-filter-label">Filter Top 5:</span>
+    <!-- Populated by JS -->
+  </div>
+
+  <!-- Top 5 Today + Top 5 This Week -->
+  <div class="top5-grid">
+    <div class="streak-card">
+      <div class="streak-card-head">
+        <div class="streak-head-left">
+          <span class="streak-icon-wrap orange">⚡</span>
+          <div>
+            <div class="streak-card-title">Top 5 Today</div>
+            <div class="streak-card-sub" id="top5TodayDate">—</div>
+          </div>
+        </div>
+        <div class="streak-count-pill" id="top5TodayKm">0 km</div>
+      </div>
+      <div class="streak-list" id="top5TodayList">
+        <div class="streak-empty">⏳ Waiting for activity data…</div>
+      </div>
+    </div>
+
+    <div class="streak-card">
+      <div class="streak-card-head">
+        <div class="streak-head-left">
+          <span class="streak-icon-wrap green">🏆</span>
+          <div>
+            <div class="streak-card-title">Top 5 This Week</div>
+            <div class="streak-card-sub" id="top5WeekRange">Mon–Sun</div>
+          </div>
+        </div>
+        <div class="streak-count-pill" id="top5WeekKm">0 km</div>
+      </div>
+      <div class="streak-list" id="top5WeekList">
+        <div class="streak-empty">⏳ Waiting for activity data…</div>
+      </div>
+    </div>
+  </div>
+
   <div class="streaks-grid">
     <!-- Card 1: First Activity Today -->
     <div class="streak-card">
@@ -2287,7 +2699,7 @@ input[type="date"].mob-filter-control::-webkit-calendar-picker-indicator {
     </div>
 
     <div class="mob-filter-section">
-      <label class="mob-filter-label">Date Range</label>
+      <label class="mob-filter-label">Date Range <span style="opacity:0.55;font-weight:400;font-size:10px;">· DD/MM/YYYY</span></label>
       <div class="mob-filter-row-2">
         <div>
           <label class="mob-filter-label" style="margin-bottom:5px;">From</label>
@@ -2912,8 +3324,8 @@ function updateChipsBar() {
     { id: 'f-age',       label: v => v },
     { id: 'f-location',  label: v => `📍 ${v}` },
     { id: 'f-shakha',    label: v => v },
-    { id: 'f-date-from', label: v => `From ${v}` },
-    { id: 'f-date-to',   label: v => `To ${v}` },
+    { id: 'f-date-from', label: v => `From ${fmtDDMMYYYY(v)}` },
+    { id: 'f-date-to',   label: v => `To ${fmtDDMMYYYY(v)}` },
   ];
 
   // Remove existing chips (keep empty span and open button)
@@ -3026,27 +3438,40 @@ function renderActivity() {
 }
 
 // Flexible date parser: YYYY-MM-DD, DD/MM/YYYY, MM/DD/YYYY, Google Sheets timestamps
+// Parses a date value into a LOCAL Date object.
+// Convention: when the string is numeric (slash- or dash-separated),
+// we ALWAYS interpret it as DD/MM/YYYY — never MM/DD/YYYY. ISO strings
+// (YYYY-MM-DD…) are decomposed into local Y/M/D parts to avoid UTC drift.
 function parseFlexDate(val) {
-  if (!val) return null;
+  if (val == null || val === "") return null;
   const s = String(val).trim();
-  // YYYY-MM-DD (ISO)
-  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return new Date(s.slice(0, 10));
-  // DD/MM/YYYY or DD-MM-YYYY
+
+  // ISO 8601 — decompose to LOCAL date so we don't get UTC-midnight drift
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) return new Date(+iso[1], +iso[2] - 1, +iso[3]);
+
+  // DD/MM/YYYY or DD-MM-YYYY — strictly treated as day/month/year
   const dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
   if (dmy) {
-    const d = parseInt(dmy[1]), mo = parseInt(dmy[2]), yr = parseInt(dmy[3]);
-    // If month > 12 it must be day/month swap
-    if (mo <= 12) return new Date(`${yr}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`);
+    const d = +dmy[1], mo = +dmy[2], yr = +dmy[3];
+    if (mo >= 1 && mo <= 12 && d >= 1 && d <= 31) return new Date(yr, mo - 1, d);
+    return null; // malformed — refuse to silently swap to MDY
   }
-  // Google Sheets serial number (days since Dec 30, 1899)
+
+  // Google Sheets serial number (days since 1899-12-30)
   if (/^\d{5}$/.test(s)) {
     const epoch = new Date(1899, 11, 30);
-    epoch.setDate(epoch.getDate() + parseInt(s));
+    epoch.setDate(epoch.getDate() + parseInt(s, 10));
     return epoch;
   }
-  // Fallback: let JS try
-  const d = new Date(s);
-  return isNaN(d) ? null : d;
+
+  // Textual fallback (e.g. "May 3, 2026") — only for non-numeric inputs,
+  // since locale parsing of numeric strings risks MDY interpretation
+  if (!/^\d/.test(s)) {
+    const d = new Date(s);
+    return isNaN(d) ? null : new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+  return null;
 }
 
 function renderActBoard(id, data, key, colorClass) {
@@ -3169,6 +3594,8 @@ function initStreaks() {
   fetchAnnouncements(false);
   if (annTimer) clearInterval(annTimer);
   annTimer = setInterval(() => fetchAnnouncements(false), ANN_REFRESH_MS);
+  // Build the activity-type filter chip bar (idempotent)
+  buildTypeFilterBar();
   // Streak lists: render now if data is available; otherwise the
   // initActivity success path will call renderHotStreaks() once data arrives.
   renderHotStreaks();
@@ -3203,6 +3630,261 @@ function htmlToPlainText(html) {
   return (tmp.textContent || tmp.innerText || "").replace(/\s+/g, ' ').trim();
 }
 
+// ── Activity Type Detection ─────────────────────────────────────────
+// Maps an activity-name string to one of four marathon types.
+// Uses regex-with-word-boundaries to handle variants like "Running 5K",
+// "Cycle ride", "Bicycling", "Brisk walk", "Swim 1km", etc.
+const ACTIVITY_TYPES = [
+  { id:'Running',  label:'🏃 Running',  color:'#E8571A', regex:/\b(running|runs?|jog(ging)?)\b/i },
+  { id:'Cycling',  label:'🚴 Cycling',  color:'#4D9DE0', regex:/\b(cycling|cycle|biking|bike|bicycl(e|ing))\b/i },
+  { id:'Walking',  label:'🚶 Walking',  color:'#06D6A0', regex:/\b(walking|walks?|hike|hiking|trek)\b/i },
+  { id:'Swimming', label:'🏊 Swimming', color:'#38BDF8', regex:/\b(swimming|swims?|swam)\b/i },
+];
+const TYPE_BY_ID = Object.fromEntries(ACTIVITY_TYPES.map(t => [t.id, t]));
+
+function detectActivityType(activityStr) {
+  const s = String(activityStr || '');
+  for (const t of ACTIVITY_TYPES) if (t.regex.test(s)) return t.id;
+  return null; // unknown / non-marathon-counted (e.g. yoga, meditation)
+}
+
+// Filter state (single-select). 'All' means union of the 4 types.
+let currentTypeFilter = 'All';
+let distChartInstance = null;
+
+// ── Build the type filter chip bar (called once) ────────────────────
+function buildTypeFilterBar() {
+  const bar = document.getElementById('typeFilterBar');
+  if (!bar || bar.dataset.built === '1') return;
+  bar.dataset.built = '1';
+
+  // "All 4" chip
+  const allChip = document.createElement('button');
+  allChip.type = 'button';
+  allChip.className = 'type-chip active';
+  allChip.dataset.type = 'All';
+  allChip.innerHTML = 'All 4 Types';
+  allChip.onclick = () => setTypeFilter('All');
+  bar.appendChild(allChip);
+
+  // Per-type chips with color dots
+  ACTIVITY_TYPES.forEach(t => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'type-chip';
+    chip.dataset.type = t.id;
+    chip.innerHTML = `<span class="type-chip-dot" style="background:${t.color}"></span>${t.label}`;
+    chip.onclick = () => setTypeFilter(t.id);
+    bar.appendChild(chip);
+  });
+}
+
+function setTypeFilter(typeId) {
+  if (currentTypeFilter === typeId) return;
+  currentTypeFilter = typeId;
+  document.querySelectorAll('#typeFilterBar .type-chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.type === typeId);
+  });
+  // Re-render the leaderboards (filter affects Top 5 only — not goal/pie)
+  renderTop5Boards();
+}
+
+// ── Date range helpers ──────────────────────────────────────────────
+function startOfIsoWeek(date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  // getDay: 0=Sun, 1=Mon, ..., 6=Sat — convert Sunday to 7 so Monday is start
+  const isoDay = d.getDay() || 7;
+  d.setDate(d.getDate() - (isoDay - 1));
+  return d;
+}
+
+// ── Goal & Pie rendering (always show all 4 types, no filter) ───────
+function renderGoalAndPie() {
+  if (!actLoaded) return;
+
+  // Aggregate km per type across the entire dataset
+  const typeKm = { Running:0, Cycling:0, Walking:0, Swimming:0 };
+  actRawData.forEach(r => {
+    const type = detectActivityType(r[ACT_KEYS.activity]);
+    if (!type) return;
+    const km = parseFloat(r[ACT_KEYS.count]) || 0;
+    typeKm[type] += km;
+  });
+
+  const total = ACTIVITY_TYPES.reduce((s, t) => s + typeKm[t.id], 0);
+  const TARGET = 75000;
+  const pct = TARGET > 0 ? (total / TARGET) * 100 : 0;
+
+  // Goal banner
+  document.getElementById('goalCurrent').textContent =
+    total.toLocaleString(undefined, { maximumFractionDigits: 1 });
+  document.getElementById('goalPct').textContent = pct.toFixed(2) + '%';
+  document.getElementById('goalFill').style.width = Math.min(pct, 100) + '%';
+  const remaining = Math.max(TARGET - total, 0);
+  document.getElementById('goalRemaining').textContent =
+    remaining > 0
+      ? remaining.toLocaleString(undefined, { maximumFractionDigits: 0 }) + ' km to go'
+      : '🎉 Target reached!';
+
+  // Pie chart
+  const labels = ACTIVITY_TYPES.map(t => t.id);
+  const data   = ACTIVITY_TYPES.map(t => typeKm[t.id]);
+  const colors = ACTIVITY_TYPES.map(t => t.color);
+
+  const canvas = document.getElementById('distChart');
+  if (!canvas) return;
+
+  if (distChartInstance) {
+    distChartInstance.data.labels = labels;
+    distChartInstance.data.datasets[0].data = data;
+    distChartInstance.data.datasets[0].backgroundColor = colors;
+    distChartInstance.update();
+  } else {
+    distChartInstance = new Chart(canvas, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{
+          data,
+          backgroundColor: colors,
+          borderColor: 'rgba(8,21,43,1)',
+          borderWidth: 3,
+          hoverOffset: 8,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '62%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const v = ctx.parsed || 0;
+                const sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                const p = sum > 0 ? (v / sum * 100).toFixed(1) : '0.0';
+                return `${ctx.label}: ${v.toLocaleString(undefined,{maximumFractionDigits:1})} km (${p}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // Center label inside doughnut
+  document.getElementById('distCenterNum').textContent =
+    total >= 10000
+      ? (total / 1000).toFixed(1) + 'K'
+      : total.toLocaleString(undefined, { maximumFractionDigits: 0 });
+
+  // Legend table
+  const legendEl = document.getElementById('distLegend');
+  legendEl.innerHTML = ACTIVITY_TYPES.map(t => {
+    const km = typeKm[t.id];
+    const p  = total > 0 ? (km / total * 100) : 0;
+    return `
+      <div class="dist-legend-row">
+        <span class="dist-dot" style="background:${t.color}"></span>
+        <span class="dist-name">${t.label}</span>
+        <span class="dist-km">${km.toLocaleString(undefined,{maximumFractionDigits:1})} km</span>
+        <span class="dist-pct">${p.toFixed(1)}%</span>
+      </div>`;
+  }).join('');
+}
+
+// ── Top 5 leaderboards (respects currentTypeFilter) ─────────────────
+function renderTop5Boards() {
+  const todayListEl = document.getElementById('top5TodayList');
+  const weekListEl  = document.getElementById('top5WeekList');
+  if (!todayListEl || !weekListEl) return;
+
+  if (!actLoaded) {
+    todayListEl.innerHTML = '<div class="streak-empty">⏳ Waiting for activity data…</div>';
+    weekListEl.innerHTML  = '<div class="streak-empty">⏳ Waiting for activity data…</div>';
+    return;
+  }
+
+  // Today + week boundaries (local calendar)
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayKey = ymd(today);
+  const weekStart = startOfIsoWeek(today);
+
+  // Sub-text: today's date + week range
+  document.getElementById('top5TodayDate').textContent = fmtDDMMYYYY(today);
+  document.getElementById('top5WeekRange').textContent =
+    fmtDDMMYYYY(weekStart) + ' – ' + fmtDDMMYYYY(today);
+
+  // Aggregate per (name|||shakha) within each window, applying type filter
+  const todayMap = {}, weekMap = {};
+  let todayTotal = 0, weekTotal = 0;
+
+  actRawData.forEach(r => {
+    const name   = String(r[ACT_KEYS.name]   || '').trim();
+    const shakha = String(r[ACT_KEYS.shakha] || '').trim();
+    if (!name) return;
+
+    const type = detectActivityType(r[ACT_KEYS.activity]);
+    // 'All' = any of the 4 types; specific filter = that type only
+    if (currentTypeFilter === 'All') {
+      if (!type) return; // skip unrecognised types from leaderboards
+    } else {
+      if (type !== currentTypeFilter) return;
+    }
+
+    const dKey = dayKey(r[ACT_KEYS.date]);
+    if (!dKey) return;
+    const km = parseFloat(r[ACT_KEYS.count]) || 0;
+    const pKey = name + '|||' + shakha;
+
+    if (dKey === todayKey) {
+      if (!todayMap[pKey]) todayMap[pKey] = { name, shakha, km: 0 };
+      todayMap[pKey].km += km;
+      todayTotal += km;
+    }
+
+    // Compare day-strings rather than constructing Dates — cheaper + TZ-safe
+    const weekStartKey = ymd(weekStart);
+    if (dKey >= weekStartKey && dKey <= todayKey) {
+      if (!weekMap[pKey]) weekMap[pKey] = { name, shakha, km: 0 };
+      weekMap[pKey].km += km;
+      weekTotal += km;
+    }
+  });
+
+  const top5 = (map) => Object.values(map)
+    .sort((a, b) => b.km - a.km || a.name.localeCompare(b.name))
+    .slice(0, 5);
+
+  document.getElementById('top5TodayKm').textContent =
+    todayTotal.toLocaleString(undefined, { maximumFractionDigits: 1 }) + ' km';
+  document.getElementById('top5WeekKm').textContent =
+    weekTotal.toLocaleString(undefined, { maximumFractionDigits: 1 }) + ' km';
+
+  todayListEl.innerHTML = renderTop5Rows(top5(todayMap), 'today');
+  weekListEl.innerHTML  = renderTop5Rows(top5(weekMap),  'week');
+}
+
+function renderTop5Rows(rows, kind) {
+  if (!rows || rows.length === 0) {
+    const filterMsg = currentTypeFilter === 'All' ? '' : ` for ${currentTypeFilter}`;
+    const range = kind === 'today' ? 'today' : 'this week';
+    return `<div class="streak-empty">🌱 No activities logged ${range}${filterMsg} yet.</div>`;
+  }
+  const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+  return rows.map((p, i) => `
+    <div class="top5-row">
+      <div class="top5-medal">${medals[i] || (i + 1)}</div>
+      <div class="streak-info">
+        <div class="streak-name">${escapeHtml(p.name)}</div>
+        <div class="streak-shakha">${escapeHtml(p.shakha || '—')}</div>
+      </div>
+      <div class="top5-km">${p.km.toFixed(1)} km</div>
+    </div>`).join('');
+}
+
 // ── Streak rendering ─────────────────────────────────────────────────
 function ymd(d) {
   return d.getFullYear() + '-' +
@@ -3210,34 +3892,57 @@ function ymd(d) {
          String(d.getDate()).padStart(2, '0');
 }
 
-// Timezone-safe day key extractor. Returns "YYYY-MM-DD" without any
-// UTC roundtrip for ISO/DMY strings — important for users in negative
-// timezones where `new Date('2026-05-03')` would otherwise resolve to
-// the previous local day. parseFlexDate is left untouched (used elsewhere).
+// Format any input (Date object, "YYYY-MM-DD" string, or any value
+// parseFlexDate can handle) as DD/MM/YYYY for display. The whole UI
+// uses this — so dates always read the same way regardless of source.
+function fmtDDMMYYYY(input) {
+  if (input == null || input === '') return '';
+  let d;
+  // Duck-type Date detection (instanceof can fail across realms / iframes)
+  if (input && typeof input.getDate === 'function' && typeof input.getMonth === 'function') {
+    d = input;
+  } else {
+    d = parseFlexDate(input);
+  }
+  if (!d || isNaN(d.getTime ? d.getTime() : NaN)) return '';
+  return String(d.getDate()).padStart(2,'0') + '/' +
+         String(d.getMonth() + 1).padStart(2,'0') + '/' +
+         d.getFullYear();
+}
+
+// Timezone-safe day key extractor → returns "YYYY-MM-DD".
+// Uses the SAME strict DMY convention as parseFlexDate: any d/m/y or d-m-y
+// string is interpreted as DD/MM/YYYY, never MM/DD/YYYY.
 function dayKey(rawValue) {
   if (rawValue == null || rawValue === '') return null;
   const s = String(rawValue).trim();
-  // ISO YYYY-MM-DD (with or without time suffix)
+
+  // ISO YYYY-MM-DD (with or without time suffix) — already in target format
   if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
-  // DD/MM/YYYY or DD-MM-YYYY
+
+  // DD/MM/YYYY or DD-MM-YYYY — strictly treated as day/month/year
   const dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
   if (dmy) {
-    const d  = parseInt(dmy[1], 10);
-    const mo = parseInt(dmy[2], 10);
-    const yr = parseInt(dmy[3], 10);
-    if (mo <= 12) {
+    const d = +dmy[1], mo = +dmy[2], yr = +dmy[3];
+    if (mo >= 1 && mo <= 12 && d >= 1 && d <= 31) {
       return yr + '-' + String(mo).padStart(2,'0') + '-' + String(d).padStart(2,'0');
     }
+    return null;
   }
-  // Sheets serial number (uses local-time constructor, safe)
+
+  // Sheets serial number
   if (/^\d{5}$/.test(s)) {
     const epoch = new Date(1899, 11, 30);
     epoch.setDate(epoch.getDate() + parseInt(s, 10));
     return ymd(epoch);
   }
-  // Fallback: best-effort parse + local components
-  const d = new Date(s);
-  return isNaN(d) ? null : ymd(d);
+
+  // Textual fallback — only for non-numeric inputs
+  if (!/^\d/.test(s)) {
+    const d = new Date(s);
+    return isNaN(d) ? null : ymd(d);
+  }
+  return null;
 }
 
 function escapeHtml(s) {
@@ -3247,6 +3952,16 @@ function escapeHtml(s) {
 }
 
 function renderHotStreaks() {
+  // Each section is independently wrapped so a failure in one (e.g. a missing
+  // helper or DOM id) cannot block the others. Errors surface to the console
+  // for debugging instead of cascading up to initActivity's catch and showing
+  // a misleading "Activity data is offline" message.
+  try { renderGoalAndPie(); }   catch (e) { console.error('Goal/Pie render failed:', e); }
+  try { renderTop5Boards(); }   catch (e) { console.error('Top 5 render failed:', e); }
+  try { renderStreakLists(); }  catch (e) { console.error('Streak lists render failed:', e); }
+}
+
+function renderStreakLists() {
   const firstListEl = document.getElementById('streakFirstList');
   const dailyListEl = document.getElementById('streakDailyList');
   if (!firstListEl || !dailyListEl) return; // panel not in DOM yet
@@ -3269,7 +3984,7 @@ function renderHotStreaks() {
 
   // Prepare display sub-text for First-Today card
   document.getElementById('streakFirstDate').textContent =
-    today.toLocaleDateString(undefined, { weekday:'long', day:'numeric', month:'long' });
+    today.toLocaleDateString(undefined, { weekday:'long' }) + ' · ' + fmtDDMMYYYY(today);
 
   if (today < startDate) {
     // Pre-May edge case — streak window hasn't opened yet
@@ -3362,7 +4077,7 @@ function renderHotStreaks() {
   }
 
   if (streakers.length === 0) {
-    dailyListEl.innerHTML = `<div class="streak-empty">🎯 No one has logged on every single day from ${escapeHtml(formatDayMonth(startDate))} to today yet.<br>Could you be the first?</div>`;
+    dailyListEl.innerHTML = `<div class="streak-empty">🎯 No one has logged on every single day from ${escapeHtml(fmtDDMMYYYY(startDate))} to today yet.<br>Could you be the first?</div>`;
   } else {
     dailyListEl.innerHTML = streakers.map((p, i) => `
       <div class="streak-row">
@@ -3380,7 +4095,8 @@ function renderHotStreaks() {
 }
 
 function formatDayMonth(d) {
-  return d.toLocaleDateString(undefined, { day:'numeric', month:'long' });
+  // Kept for backwards compatibility; prefer fmtDDMMYYYY for full dates
+  return fmtDDMMYYYY(d);
 }
 
 // ── Startup: load activity data immediately (Hot Streaks needs it) ──
