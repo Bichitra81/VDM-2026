@@ -506,6 +506,128 @@ body::before {
   color: var(--text-muted);
 }
 
+/* ═══════════════════════════════════════════════
+   GENDER DISTRIBUTION
+═══════════════════════════════════════════════ */
+.gender-section {
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.gender-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.gender-title {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+.gender-title em {
+  font-style: normal;
+  color: var(--saffron);
+}
+.gender-total {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.5px;
+}
+.gender-total .gt-label {
+  font-family: 'Outfit', sans-serif;
+  font-size: 10.5px;
+  color: var(--text-muted);
+  letter-spacing: 1.5px;
+  font-weight: 600;
+  margin-right: 8px;
+  text-transform: uppercase;
+}
+.gender-bar {
+  display: flex;
+  height: 14px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.gender-fill {
+  height: 100%;
+  transition: width 1.1s ease;
+}
+.gender-fill.male   { background: linear-gradient(90deg, #4D9DE0, #6FB3F0); }
+.gender-fill.female { background: linear-gradient(90deg, #EF476F, #FF7A99); }
+.gender-fill.other  { background: linear-gradient(90deg, #7A96BC, #B8CDEA); }
+.gender-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  margin-top: 14px;
+}
+.gender-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.gender-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.gender-dot.male   { background: #4D9DE0; box-shadow: 0 0 8px rgba(77,157,224,0.5); }
+.gender-dot.female { background: #EF476F; box-shadow: 0 0 8px rgba(239,71,111,0.5); }
+.gender-dot.other  { background: #7A96BC; }
+.gender-label {
+  color: var(--text-light);
+  font-weight: 500;
+}
+.gender-count {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-white);
+  min-width: 30px;
+}
+.gender-pct {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  background: rgba(255,255,255,0.05);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+/* Make shakha dropdown wider to comfortably show "code · name · country" */
+.filter-select#shakhaFilter { min-width: 260px; }
+.filter-select optgroup {
+  background: var(--navy-mid);
+  color: var(--gold);
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.5px;
+}
+.filter-select option {
+  background: var(--navy-card);
+  color: var(--text-white);
+}
+
+@media (max-width: 768px) {
+  .gender-section { padding: 16px 18px; }
+  .gender-total { font-size: 20px; }
+  .gender-legend { gap: 14px; }
+  .gender-count { font-size: 16px; }
+  .filter-select#shakhaFilter { min-width: 180px; }
+}
+
 /* PODIUM */
 .podium-section {
   background: var(--navy-card);
@@ -1486,6 +1608,42 @@ input[type="date"].mob-filter-control::-webkit-calendar-picker-indicator {
       </div>
     </div>
 
+    <!-- Gender Distribution -->
+    <div class="gender-section">
+      <div class="gender-header">
+        <span class="gender-title">⚥ <em>Gender</em> Distribution</span>
+        <span class="gender-total">
+          <span class="gt-label">Total Participants</span>
+          <span id="genderTotal">0</span>
+        </span>
+      </div>
+      <div class="gender-bar">
+        <div class="gender-fill male"   id="genderFillM" style="width:0%"></div>
+        <div class="gender-fill female" id="genderFillF" style="width:0%"></div>
+        <div class="gender-fill other"  id="genderFillO" style="width:0%"></div>
+      </div>
+      <div class="gender-legend">
+        <div class="gender-item">
+          <span class="gender-dot male"></span>
+          <span class="gender-label">Male</span>
+          <span class="gender-count" id="genderCountM">0</span>
+          <span class="gender-pct"   id="genderPctM">0%</span>
+        </div>
+        <div class="gender-item">
+          <span class="gender-dot female"></span>
+          <span class="gender-label">Female</span>
+          <span class="gender-count" id="genderCountF">0</span>
+          <span class="gender-pct"   id="genderPctF">0%</span>
+        </div>
+        <div class="gender-item" id="genderItemO" style="display:none;">
+          <span class="gender-dot other"></span>
+          <span class="gender-label">Other / Unspecified</span>
+          <span class="gender-count" id="genderCountO">0</span>
+          <span class="gender-pct"   id="genderPctO">0%</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Podium -->
     <div class="podium-section">
       <div class="section-title">🏆 <em>Top 3</em> Shakhas</div>
@@ -1742,91 +1900,94 @@ const TARGET = 1000;
 
 const SHAKHA_MAP = {
   "1":  { name:"Associated Shakha (Optional)", country:"Others" },
-  "2":  { name:"Vienna Shakha, Austria", country:"AT" },
-  "3":  { name:"Austria eShakha", country:"AT" },
-  "4":  { name:"Brussels Balagokulam Shakha", country:"BE" },
-  "5":  { name:"Kishor/Kishori Milan Group, Steenokkerzeel", country:"BE" },
-  "6":  { name:"Leuven Shakha", country:"BE" },
-  "7":  { name:"Aalborg Shakha", country:"DK" },
-  "8":  { name:"Aarhus Shakha", country:"DK" },
-  "9":  { name:"Balgokulam Shakha, Bagsvaerd", country:"DK" },
-  "10": { name:"Denmark Online Shakha", country:"DK" },
-  "11": { name:"Guru Govind Shakha, CPH", country:"DK" },
-  "12": { name:"Kokkedal Shakha", country:"DK" },
-  "13": { name:"Ørestad BalGokulam Shakha", country:"DK" },
-  "14": { name:"Ballerup Shakha", country:"DK" },
-  "15": { name:"Sønderborg Shakha", country:"DK" },
-  "16": { name:"Ringsted Milan Shakha", country:"DK" },
-  "17": { name:"Espoo/Helsinki Shakha", country:"FI" },
-  "18": { name:"Tampere Balagokulam Shakha", country:"FI" },
-  "19": { name:"Monthly Shakha – Paris", country:"FR" },
-  "20": { name:"Weekly Shakha – Grigny, Paris", country:"FR" },
-  "21": { name:"Online Shakha France", country:"FR" },
-  "22": { name:"Dhruv Parivar Shakha, Frankfurt", country:"DE" },
-  "23": { name:"Keshav Shakha Balagokulam", country:"DE" },
-  "24": { name:"Wolfsburg Shakha", country:"DE" },
-  "25": { name:"Darmstadt-Dieburg Sattva Shakha", country:"DE" },
-  "26": { name:"Erlangen Shakha", country:"DE" },
+  "2":  { name:"Vienna, Shakha Austria", country:"AT" },
+  "3":  { name:"Austria eShakha Austria", country:"AT" },
+  "4":  { name:"Brussels Balagokulam Shakha Belgium", country:"BE" },
+  "5":  { name:"Kishor/kishori milan group Steenokkerzeel Belgium", country:"BE" },
+  "6":  { name:"Leuven Shakha Belgium", country:"BE" },
+  "7":  { name:"Aalborg Shakha Denmark", country:"DK" },
+  "8":  { name:"Aarhus Shakha Denmark", country:"DK" },
+  "9":  { name:"Balgokulam Shakha, Bagsvaerd Denmark", country:"DK" },
+  "10": { name:"Denmark Online Shakha Denmark", country:"DK" },
+  "11": { name:"Guru Govind Shakha, CPH Denmark", country:"DK" },
+  "12": { name:"Kokkedal Shakha Denmark", country:"DK" },
+  "13": { name:"Ørestad BalGokulam Shakha, Denmark", country:"DK" },
+  "14": { name:"Ballerup Shakha Denmark", country:"DK" },
+  "15": { name:"Sønderborg Shaka Denmark", country:"DK" },
+  "16": { name:"Ringsted Milan Shaka Denmark", country:"DK" },
+  "17": { name:"Espoo/Helsinki Shakha Finland", country:"FI" },
+  "18": { name:"Tampere Balagokulam, Shakha Finland", country:"FI" },
+  "19": { name:"Monthly shakha- Paris France", country:"FR" },
+  "20": { name:"Weekly Shakha- Grigny (Paris suburb) France", country:"FR" },
+  "21": { name:"Online shakha France", country:"FR" },
+  "22": { name:"Dhruv Parivar Shakha, Frankfurt Germany", country:"DE" },
+  "23": { name:"Lübeck Shakha, Germany", country:"DE" },
+  "24": { name:"Wolfsburg Shakha Germany", country:"DE" },
+  "25": { name:"Darmstadt-Dieburg Sattva Shakha Germany", country:"DE" },
+  "26": { name:"Erlangen Shakha Germany", country:"DE" },
   "27": { name:"YUVA Shakha Germany", country:"DE" },
-  "28": { name:"Braunschweig Shakha", country:"DE" },
-  "29": { name:"Mannheim Shakha", country:"DE" },
-  "30": { name:"Stuttgart Shri Ram Shakha", country:"DE" },
-  "31": { name:"Prahlad Parivaar Shakha, Giessen-Marburg", country:"DE" },
-  "32": { name:"Vrindavan Shakha, Dresden", country:"DE" },
-  "33": { name:"Hamburg - Pinneberg Shakha", country:"DE" },
-  "34": { name:"Munich Shakha", country:"DE" },
-  "35": { name:"Dusseldorf Shakha", country:"DE" },
-  "36": { name:"Berlin Shakha", country:"DE" },
-  "37": { name:"Langen Shakha", country:"DE" },
-  "38": { name:"Ingolstadt Shakha", country:"DE" },
-  "39": { name:"Hannover Shakha", country:"DE" },
-  "40": { name:"Wernigerode Shakha", country:"DE" },
-  "41": { name:"Magdeburg Shakha", country:"DE" },
-  "42": { name:"Bremen Shakha", country:"DE" },
-  "43": { name:"Celle Shakha", country:"DE" },
-  "44": { name:"Abhimanyu Yuva Shakha, Frankfurt", country:"DE" },
-  "45": { name:"Heidelberg/Karlsruhe Shakha", country:"DE" },
-  "46": { name:"Köln Shakha", country:"DE" },
-  "47": { name:"Vijay Shakha, Göppingen", country:"DE" },
-  "48": { name:"Vivekananda Sakha, Ireland", country:"IR" },
-  "49": { name:"Kilcock Shakha, Ireland", country:"IR" },
-  "50": { name:"Limerick Milan, Ireland", country:"IR" },
+  "28": { name:"Braunschweig Germany", country:"DE" },
+  "29": { name:"Mannheim Shakha Germany", country:"DE" },
+  "30": { name:"Stuttgart Shri Ram Shakha Germany", country:"DE" },
+  "31": { name:"Prahlad Parivaar Shakha Giessen-Marburg Germany", country:"DE" },
+  "32": { name:"Vrindavan Shakha Dresden Germany", country:"DE" },
+  "33": { name:"Hamburg - Pinneberg Shakha Germany", country:"DE" },
+  "34": { name:"Munich Germany", country:"DE" },
+  "35": { name:"Dusseldorf Germany", country:"DE" },
+  "36": { name:"Berlin Germany", country:"DE" },
+  "37": { name:"Langen Germany", country:"DE" },
+  "38": { name:"Ingolstadt Germany", country:"DE" },
+  "39": { name:"Hannover Germany", country:"DE" },
+  "40": { name:"Wernigerode Germany", country:"DE" },
+  "41": { name:"Magdeburg Germany", country:"DE" },
+  "42": { name:"Bremen Germany", country:"DE" },
+  "43": { name:"Celle Germany", country:"DE" },
+  "44": { name:"Abhimanyu Yuva Shakha Frankfy Germany", country:"DE" },
+  "45": { name:"Heidelberg Shakha, Germany", country:"DE" },
+  "46": { name:"Köln Germany", country:"DE" },
+  "47": { name:"Vijay Shakha Göppingen Germany", country:"DE" },
+  "48": { name:"Vivekananda Sakha Ireland", country:"IR" },
+  "49": { name:"Kilcock Shakha Ireland", country:"IR" },
+  "50": { name:"Limerick Milan Ireland", country:"IR" },
   "51": { name:"Balagokulam Ireland", country:"IR" },
-  "52": { name:"Keshav Shakha, South Dublin", country:"IR" },
-  "53": { name:"Nivedita Shakha, North Dublin", country:"IR" },
-  "54": { name:"Maynooth Shakha", country:"IR" },
-  "55": { name:"Tralee Shakha", country:"IR" },
-  "56": { name:"Lakshmi Bai Shakha, Ireland", country:"IR" },
-  "57": { name:"Mahila Milan Ireland", country:"IR" },
-  "58": { name:"Rome Shakha, Italy", country:"IT" },
-  "59": { name:"Keshav Parivar Shakha, Eindhoven", country:"NL" },
-  "60": { name:"Balagokulam Shakha, Den Haag", country:"NL" },
-  "61": { name:"Bhagwan Mahaveer Shakha, Utrecht", country:"NL" },
-  "62": { name:"e-Milan Shakha (Online), NL", country:"NL" },
-  "63": { name:"Rana Pratap Shakha, Amsterdam", country:"NL" },
-  "64": { name:"Saraswati Rotterdam Shakha", country:"NL" },
-  "65": { name:"Sharvan Rotterdam Shakha", country:"NL" },
-  "66": { name:"Shri Vishnu Shakha, Den Haag", country:"NL" },
-  "67": { name:"Skand/Parvati Shakha, Den Haag", country:"NL" },
-  "68": { name:"Vinayak Rotterdam Shakha", country:"NL" },
-  "69": { name:"Balagokulam Shakha, Arnhem", country:"NL" },
-  "70": { name:"Vishwakarma Shakha, Amstelveen", country:"NL" },
-  "71": { name:"Arendal Shakha", country:"NO" },
-  "72": { name:"Keshav Shakha, Oslo", country:"NO" },
-  "73": { name:"Grorud Shakha, Oslo", country:"NO" },
-  "74": { name:"Madhav Shakha, Asker", country:"NO" },
-  "75": { name:"Chatrapati Shivaji Maharaj Shakha, Drammen", country:"NO" },
-  "76": { name:"Sharada Shakha, Sandefjord", country:"NO" },
-  "77": { name:"Shri Guru Gobind Singh Shakha, Stavanger", country:"NO" },
-  "78": { name:"Physical Shakha, Krakow", country:"PO" },
-  "79": { name:"Devi Ahilyabai Holkar, Barcelona", country:"SP" },
-  "80": { name:"Stockholm Shakha", country:"SE" },
-  "81": { name:"Jarfalla Shakha", country:"SE" },
-  "82": { name:"Gothenburg Shakha", country:"SE" },
-  "83": { name:"Södertälje Shakha", country:"SE" },
-  "84": { name:"Malmo Shakha", country:"SE" },
-  "85": { name:"Switzerland Shakha", country:"CH" },
-  "86": { name:"Parivaar Shakha, Baden", country:"CH" }
+  "52": { name:"Keshav Shakha, South Dublin Ireland", country:"IR" },
+  "53": { name:"Nivedita Shakha, North Dublin Ireland", country:"IR" },
+  "54": { name:"Maynooth Shakha Ireland", country:"IR" },
+  "55": { name:"Tralee Shakha Ireland", country:"IR" },
+  "56": { name:"Lakshmi bai Shakha Ireland", country:"IR" },
+  "57": { name:"Mahila milan Ireland", country:"IR" },
+  "58": { name:"Rome Shakha, IT Italy", country:"IT" },
+  "59": { name:"Keshav Parivar Shakha, Eindhoven Netherland", country:"NL" },
+  "60": { name:"Balagokulam Shakha, Den Haag Netherland", country:"NL" },
+  "61": { name:"Bhagwan Mahaveer Shakha, Utrecht Netherland", country:"NL" },
+  "62": { name:"e-milan Shakha (Online ) Netherland", country:"NL" },
+  "63": { name:"Rana Pratap Shakha, Amsterdam Netherland", country:"NL" },
+  "64": { name:"Saraswati Rotterdam Shakha, NL Netherland", country:"NL" },
+  "65": { name:"Sharvan Rotterdam Shakha Netherland", country:"NL" },
+  "66": { name:"Shri Vishnu Shakha, Den Haag Netherland", country:"NL" },
+  "67": { name:"Skand/Parvati Shakha, Den Haag Netherland", country:"NL" },
+  "68": { name:"Vinayak Rotterdam Shakha Netherland", country:"NL" },
+  "69": { name:"Balagokulam Shakha, Arnhem Netherland", country:"NL" },
+  "70": { name:"Vishwakarma Shakha, Amstelveen Netherland", country:"NL" },
+  "71": { name:"Arendal Shakha, Arendal Norway", country:"NO" },
+  "72": { name:"Keshav Shakha, Oslo Norway", country:"NO" },
+  "73": { name:"Grorud Shakha, Oslo Norway", country:"NO" },
+  "74": { name:"Madhav Shakha, Asker Norway", country:"NO" },
+  "75": { name:"Chatrapati Shivaji maharaj Shakha, Drammen Norway", country:"NO" },
+  "76": { name:"Sharada Shakha, Sandefjord Norway", country:"NO" },
+  "77": { name:"Shri Guru Gobind Singh Shakha Stavanger Norway", country:"NO" },
+  "78": { name:"Physical shakha, Krakao Poland", country:"PO" },
+  "79": { name:"Devi Ahilyabai Holkar, Barcelona Spain", country:"SP" },
+  "80": { name:"Stockholm Shakha Sweden", country:"SE" },
+  "81": { name:"Jarfalla Shakha Sweden", country:"SE" },
+  "82": { name:"Gothenburg Shakha Sweden", country:"SE" },
+  "83": { name:"Södertälje Shakha Sweden", country:"SE" },
+  "84": { name:"Malmo Shaka Sweden", country:"SE" },
+  "85": { name:"Switzerland Shakha Switzerland", country:"CH" },
+  "86": { name:"Parivaar shakha, Baden Switzerland", country:"CH" },
+  "87": { name:"Chatrapati Sambhaji Maharaj Shakha, Madrid, Spain", country:"SP" },
+  "88": { name:"Karlsruhe Shakha, Germany", country:"DE" },
+  "89": { name:"Lübeck Shakha, Germany", country:"DE" }
 };
 
 const COUNTRY_NAMES = {
@@ -1854,16 +2015,10 @@ function buildDropdowns(data) {
   dropdownsBuilt = true;
 
   const countries = new Set();
-  const shakhas = new Map();
 
   data.forEach(item => {
     const country = (item["User Country"] || "").trim();
     if (country) countries.add(country);
-    const raw = String(item["Unique Shakha Code"] || "").trim();
-    const resolved = resolveShakha(raw);
-    if (resolved && resolved.code !== "1") {
-      shakhas.set(resolved.code, resolved.name);
-    }
   });
 
   const cf = document.getElementById("countryFilter");
@@ -1871,9 +2026,42 @@ function buildDropdowns(data) {
     const o = document.createElement("option"); o.value=c; o.text=c; cf.appendChild(o);
   });
 
+  // ── Shakha dropdown: list ALL shakhas from SHAKHA_MAP (not just those with
+  //    registrations), grouped by country, showing code · name. The country is
+  //    the optgroup label so each shakha entry shows its code + country context.
   const sf = document.getElementById("shakhaFilter");
-  [...shakhas.entries()].sort((a,b)=>a[1].localeCompare(b[1])).forEach(([code,name])=>{
-    const o = document.createElement("option"); o.value=code; o.text=`${code} – ${name}`; sf.appendChild(o);
+
+  // Group shakhas by country code, skip the placeholder "1" (Optional)
+  const byCountry = {};
+  Object.entries(SHAKHA_MAP).forEach(([code, info]) => {
+    if (code === "1") return;
+    const cc = info.country || "Others";
+    if (!byCountry[cc]) byCountry[cc] = [];
+    byCountry[cc].push({ code, name: info.name });
+  });
+
+  // Sort country codes by their full display name, then build optgroups
+  const sortedCountryCodes = Object.keys(byCountry).sort((a, b) => {
+    const an = COUNTRY_NAMES[a] || a;
+    const bn = COUNTRY_NAMES[b] || b;
+    return an.localeCompare(bn);
+  });
+
+  sortedCountryCodes.forEach(cc => {
+    const countryName = COUNTRY_NAMES[cc] || cc;
+    const group = document.createElement("optgroup");
+    group.label = `${countryName} (${cc})`;
+    byCountry[cc]
+      .sort((a, b) => parseInt(a.code) - parseInt(b.code))
+      .forEach(({ code, name }) => {
+        const o = document.createElement("option");
+        o.value = code;
+        // Country is already shown via the optgroup label and is usually
+        // included in the name itself, so we don't append it again here.
+        o.text  = `#${String(code).padStart(2,'0')} · ${name}`;
+        group.appendChild(o);
+      });
+    sf.appendChild(group);
   });
 }
 
@@ -1961,9 +2149,65 @@ function renderRegistrations(data, selectedCountry, selectedShakha) {
   renderPodium(sorted);
   renderRegChart(sorted.slice(0, 10));
   renderTable(sorted);
+  renderGenderDistribution(filtered);
 
   const now = new Date();
   document.getElementById("lastUpdated").textContent = now.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+}
+
+// ── Gender Distribution ──────────────────────────────────────────────
+// Defensively detects the gender column (User Gender / Gender / Sex etc.)
+// and normalises values: M/Male/m → male, F/Female/f → female, else other.
+function detectGenderKey(sample) {
+  if (!sample) return null;
+  const keys = Object.keys(sample);
+  // Prefer exact-ish matches first
+  const exact = keys.find(k => /^(user\s*)?(gender|sex)$/i.test(k.trim()));
+  if (exact) return exact;
+  return keys.find(k => /gender|sex/i.test(k)) || null;
+}
+
+function normaliseGender(val) {
+  const s = String(val || "").trim().toLowerCase();
+  if (!s) return "other";
+  if (s === "m" || s.startsWith("male")   || s === "boy"  || s === "man")   return "male";
+  if (s === "f" || s.startsWith("female") || s === "girl" || s === "woman") return "female";
+  return "other";
+}
+
+function renderGenderDistribution(filtered) {
+  const total = filtered.length;
+  const genderKey = detectGenderKey(filtered[0] || allRegData[0]);
+
+  let m = 0, f = 0, o = 0;
+  if (genderKey) {
+    filtered.forEach(item => {
+      const g = normaliseGender(item[genderKey]);
+      if      (g === "male")   m++;
+      else if (g === "female") f++;
+      else                     o++;
+    });
+  } else {
+    // No gender column found in the sheet — treat all as unspecified
+    o = total;
+  }
+
+  const pct = (n) => total > 0 ? (n / total) * 100 : 0;
+  const mPct = pct(m), fPct = pct(f), oPct = pct(o);
+
+  document.getElementById("genderTotal").textContent  = total.toLocaleString();
+  document.getElementById("genderFillM").style.width  = mPct + "%";
+  document.getElementById("genderFillF").style.width  = fPct + "%";
+  document.getElementById("genderFillO").style.width  = oPct + "%";
+  document.getElementById("genderCountM").textContent = m.toLocaleString();
+  document.getElementById("genderCountF").textContent = f.toLocaleString();
+  document.getElementById("genderCountO").textContent = o.toLocaleString();
+  document.getElementById("genderPctM").textContent   = mPct.toFixed(1) + "%";
+  document.getElementById("genderPctF").textContent   = fPct.toFixed(1) + "%";
+  document.getElementById("genderPctO").textContent   = oPct.toFixed(1) + "%";
+
+  // Only show the "Other / Unspecified" row when it's non-zero
+  document.getElementById("genderItemO").style.display = o > 0 ? "" : "none";
 }
 
 function renderPodium(sorted) {
@@ -2106,6 +2350,10 @@ async function initActivity() {
     actRawData = json.filter(row => {
       const sh = row[ACT_KEYS.shakha] || "";
       const ac = row[ACT_KEYS.activity] || "";
+      // Data-quality rule: exclude any single activity entry greater than 50 km.
+      // Applied at ingestion so it propagates to ALL calcs, charts and summaries.
+      const km = parseFloat(row[ACT_KEYS.count]);
+      if (!isNaN(km) && km > 50) return false;
       return sh.toString().trim() !== "" && !ac.includes("Ashtanga") && !ac.includes("Surya Namaskar");
     });
 
