@@ -628,6 +628,387 @@ body::before {
   .filter-select#shakhaFilter { min-width: 180px; }
 }
 
+/* ═══════════════════════════════════════════════
+   ANNOUNCEMENTS TAB
+═══════════════════════════════════════════════ */
+.ann-marquee {
+  background: linear-gradient(90deg, rgba(255,153,51,0.15), rgba(212,175,55,0.12), rgba(255,153,51,0.15));
+  border: 1px solid rgba(212,175,55,0.35);
+  border-radius: 12px;
+  height: 48px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  margin-bottom: 22px;
+  position: relative;
+  box-shadow: 0 0 24px rgba(212,175,55,0.08);
+}
+.ann-marquee::before {
+  content: "📢";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--saffron), var(--gold));
+  font-size: 20px;
+  z-index: 2;
+  border-right: 1px solid rgba(0,0,0,0.15);
+}
+.ann-marquee::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 60px;
+  background: linear-gradient(90deg, transparent, var(--navy-deep));
+  z-index: 2;
+  pointer-events: none;
+}
+.ann-marquee-track {
+  white-space: nowrap;
+  padding-left: 70px;
+  display: inline-block;
+  animation: ann-scroll 30s linear infinite;
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--text-white);
+  letter-spacing: 0.2px;
+}
+.ann-marquee:hover .ann-marquee-track { animation-play-state: paused; }
+@keyframes ann-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
+.ann-card {
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px 28px;
+  margin-bottom: 18px;
+}
+.ann-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.ann-card-title {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  font-weight: 600;
+}
+.ann-card-title em {
+  font-style: normal;
+  color: var(--saffron);
+}
+.ann-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+.ann-meta-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #2ecc71;
+  box-shadow: 0 0 8px rgba(46,204,113,0.6);
+  animation: ann-pulse 1.6s ease-in-out infinite;
+}
+@keyframes ann-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(0.8); }
+}
+.ann-refresh-btn {
+  background: rgba(255,153,51,0.12);
+  border: 1px solid rgba(255,153,51,0.4);
+  color: var(--saffron);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+.ann-refresh-btn:hover {
+  background: rgba(255,153,51,0.22);
+  transform: translateY(-1px);
+}
+.ann-refresh-btn:active { transform: translateY(0); }
+.ann-refresh-btn.spinning { animation: ann-spin 0.8s linear infinite; }
+@keyframes ann-spin {
+  to { transform: rotate(360deg); }
+}
+.ann-body {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-light);
+  word-wrap: break-word;
+  min-height: 40px;
+}
+.ann-body p { margin: 0 0 12px 0; }
+.ann-body p:last-child { margin-bottom: 0; }
+.ann-body a {
+  color: var(--saffron);
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(255,153,51,0.4);
+}
+.ann-body a:hover { color: var(--gold); border-bottom-color: var(--gold); }
+.ann-body strong { color: var(--text-white); }
+.ann-body ul, .ann-body ol { padding-left: 22px; margin: 8px 0; }
+.ann-body li { margin-bottom: 6px; }
+.ann-empty {
+  text-align: center;
+  padding: 32px 20px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+.ann-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px 20px;
+  color: var(--text-muted);
+}
+.ann-loading-spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.15);
+  border-top-color: var(--saffron);
+  border-radius: 50%;
+  animation: ann-spin 0.7s linear infinite;
+}
+
+@media (max-width: 768px) {
+  .ann-card { padding: 18px 18px; }
+  .ann-marquee { height: 42px; }
+  .ann-marquee-track { font-size: 13.5px; padding-left: 60px; }
+  .ann-marquee::before { width: 48px; font-size: 17px; }
+  .ann-body { font-size: 14px; }
+}
+
+/* ═══════════════════════════════════════════════
+   HOT STREAKS TAB
+═══════════════════════════════════════════════ */
+.streaks-intro {
+  text-align: center;
+  padding: 8px 16px 22px;
+}
+.streaks-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin: 0 0 6px;
+  color: var(--text-white);
+}
+.streaks-title em {
+  font-style: normal;
+  background: linear-gradient(90deg, var(--saffron), var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.streaks-sub {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  max-width: 620px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+.streaks-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+@media (max-width: 900px) {
+  .streaks-grid { grid-template-columns: 1fr; }
+}
+
+.streak-card {
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  min-height: 360px;
+}
+.streak-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+  gap: 10px;
+}
+.streak-head-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.streak-icon-wrap {
+  width: 42px; height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.streak-icon-wrap.green  { background: linear-gradient(135deg, rgba(6,214,160,0.25), rgba(6,214,160,0.08)); border: 1px solid rgba(6,214,160,0.4); }
+.streak-icon-wrap.orange { background: linear-gradient(135deg, rgba(255,153,51,0.25), rgba(255,153,51,0.08)); border: 1px solid rgba(255,153,51,0.4); }
+.streak-card-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text-white);
+  letter-spacing: 0.4px;
+  line-height: 1.1;
+}
+.streak-card-sub {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 3px;
+  letter-spacing: 0.3px;
+}
+.streak-count-pill {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gold);
+  background: rgba(212,175,55,0.1);
+  border: 1px solid rgba(212,175,55,0.3);
+  border-radius: 999px;
+  padding: 3px 16px;
+  min-width: 50px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.streak-list {
+  flex: 1;
+  max-height: 420px;
+  overflow-y: auto;
+  margin: 0 -8px;
+  padding: 0 8px;
+}
+.streak-list::-webkit-scrollbar { width: 6px; }
+.streak-list::-webkit-scrollbar-track { background: transparent; }
+.streak-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+.streak-list::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+
+.streak-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  margin-bottom: 6px;
+  transition: background 0.15s ease;
+}
+.streak-row:hover { background: rgba(255,255,255,0.03); }
+.streak-rank {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-muted);
+  width: 26px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.streak-info {
+  flex: 1;
+  min-width: 0;
+}
+.streak-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.streak-shakha {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+.streak-badge {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  background: rgba(255,153,51,0.15);
+  color: var(--saffron);
+  border: 1px solid rgba(255,153,51,0.35);
+  padding: 4px 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  text-align: center;
+}
+.streak-badge.new {
+  background: rgba(6,214,160,0.15);
+  color: #06D6A0;
+  border-color: rgba(6,214,160,0.4);
+}
+
+.streak-empty {
+  text-align: center;
+  padding: 50px 18px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1.6;
+}
+
+.streaks-footnote {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  padding: 14px 0 6px;
+}
+.streak-meta-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #2ecc71;
+  box-shadow: 0 0 8px rgba(46,204,113,0.6);
+  animation: ann-pulse 1.6s ease-in-out infinite;
+}
+
+@media (max-width: 768px) {
+  .streaks-title { font-size: 26px; }
+  .streak-card { padding: 16px 16px; min-height: 280px; }
+  .streak-list { max-height: 380px; }
+  .streak-icon-wrap { width: 36px; height: 36px; font-size: 19px; }
+  .streak-card-title { font-size: 17px; }
+  .streak-count-pill { font-size: 18px; padding: 2px 12px; }
+}
+
 /* PODIUM */
 .podium-section {
   background: var(--navy-card);
@@ -1501,7 +1882,12 @@ input[type="date"].mob-filter-control::-webkit-calendar-picker-indicator {
     </div>
 
     <nav class="tab-bar">
-      <button class="tab-btn active" id="tab-act" onclick="switchTab('act')">
+      <button class="tab-btn active" id="tab-streaks" onclick="switchTab('streaks')">
+        <span class="tab-icon">🔥</span>
+        Hot Streaks
+        <span class="tab-badge" id="streaks-badge">LIVE</span>
+      </button>
+      <button class="tab-btn" id="tab-act" onclick="switchTab('act')">
         <span class="tab-icon">🏃</span>
         Activity Log
         <span class="tab-badge" id="act-badge">LIVE</span>
@@ -1682,7 +2068,7 @@ input[type="date"].mob-filter-control::-webkit-calendar-picker-indicator {
 <!-- ══════════════════════════════════════
      TAB 2: ACTIVITY LOG
 ══════════════════════════════════════ -->
-<div class="tab-panel active" id="panel-act">
+<div class="tab-panel" id="panel-act">
 
   <!-- Desktop filter bar (hidden on mobile via CSS) -->
   <div class="act-filters-bar">
@@ -1808,6 +2194,66 @@ input[type="date"].mob-filter-control::-webkit-calendar-picker-indicator {
 
 
 <!-- ══════════════════════════════════════
+     TAB: HOT STREAKS (default landing)
+══════════════════════════════════════ -->
+<div class="tab-panel active" id="panel-streaks">
+
+  <!-- Slim scrolling announcement ticker at top -->
+  <div class="ann-marquee" aria-label="Live announcements ticker">
+    <span class="ann-marquee-track" id="annMarqueeText">Loading announcements...</span>
+  </div>
+
+  <!-- Hot Streaks intro -->
+  <div class="streaks-intro">
+    <h2 class="streaks-title">🔥 Hot <em>Streaks</em></h2>
+    <p class="streaks-sub">Celebrating the participants powering Vishwa Dharma Marathon — first-time joiners today and the unstoppable daily streak holders.</p>
+  </div>
+
+  <div class="streaks-grid">
+    <!-- Card 1: First Activity Today -->
+    <div class="streak-card">
+      <div class="streak-card-head">
+        <div class="streak-head-left">
+          <span class="streak-icon-wrap green">🌱</span>
+          <div>
+            <div class="streak-card-title">First Activity Today</div>
+            <div class="streak-card-sub" id="streakFirstDate">Calendar day</div>
+          </div>
+        </div>
+        <div class="streak-count-pill" id="streakFirstCount">0</div>
+      </div>
+      <div class="streak-list" id="streakFirstList">
+        <div class="streak-empty">⏳ Waiting for activity data…</div>
+      </div>
+    </div>
+
+    <!-- Card 2: Daily Streakers -->
+    <div class="streak-card">
+      <div class="streak-card-head">
+        <div class="streak-head-left">
+          <span class="streak-icon-wrap orange">🔥</span>
+          <div>
+            <div class="streak-card-title">Daily Streakers</div>
+            <div class="streak-card-sub">Active every day · <span id="streakDailyDays">—</span> days &amp; counting</div>
+          </div>
+        </div>
+        <div class="streak-count-pill" id="streakDailyCount">0</div>
+      </div>
+      <div class="streak-list" id="streakDailyList">
+        <div class="streak-empty">⏳ Waiting for activity data…</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="streaks-footnote">
+    <span class="streak-meta-dot"></span>
+    Live · streaks recalculate as new activities are logged · last refresh <span id="streakUpdated">—</span>
+  </div>
+
+</div><!-- /panel-streaks -->
+
+
+<!-- ══════════════════════════════════════
      TAB 3: FILTERS (mobile only)
 ══════════════════════════════════════ -->
 <div class="tab-panel" id="panel-filters">
@@ -1885,6 +2331,10 @@ function switchTab(id) {
   }
   if (id === 'reg' && !regLoaded) {
     initRegistrations();
+  }
+  if (id === 'streaks') {
+    if (!streaksLoaded) initStreaks();
+    else renderHotStreaks(); // refresh lists with latest actRawData
   }
   if (id === 'filters') {
     syncMobFromDesktop();
@@ -2365,9 +2815,18 @@ async function initActivity() {
 
     setupActFilters();
     renderActivity();
+    // Recompute Hot Streaks now that data is in
+    if (streaksLoaded && typeof renderHotStreaks === 'function') renderHotStreaks();
   } catch(e) {
     document.getElementById('appLoader').classList.add('hidden');
     document.getElementById('act-loader').textContent = 'OFFLINE · Could not load activity data';
+    // Surface the offline state in Hot Streaks too
+    if (streaksLoaded && typeof renderHotStreaks === 'function') {
+      const f = document.getElementById('streakFirstList');
+      const d = document.getElementById('streakDailyList');
+      if (f) f.innerHTML = '<div class="streak-empty">⚠ Activity data is offline.</div>';
+      if (d) d.innerHTML = '<div class="streak-empty">⚠ Activity data is offline.</div>';
+    }
   }
 }
 
@@ -2694,8 +3153,240 @@ function updateActGraphs(data) {
   else { ageChart.data.labels=aD.l; ageChart.data.datasets[0].data=aD.v; ageChart.update(); }
 }
 
-// ── Startup: Activity Log is default tab, load its data immediately ──
+/* ═══════════════════════════════════════════
+   HOT STREAKS TAB (replaces Announcements)
+═══════════════════════════════════════════ */
+const ANN_API = "https://script.google.com/macros/s/AKfycbzZz5OqAWelMOc75BS2y0UGblRWMwnqOfvRpEBkbkqMuKMeYDtpFcKHbC33syFfrMYn/exec";
+const ANN_REFRESH_MS = 5 * 60 * 1000; // 5 minutes — matches the source HTML cadence
+const STREAK_START_MONTH = 4;  // May (0-indexed)
+const STREAK_START_DAY   = 1;
+let streaksLoaded = false;
+let annTimer  = null;
+
+function initStreaks() {
+  streaksLoaded = true;
+  // Marquee: fetch announcements + auto-refresh
+  fetchAnnouncements(false);
+  if (annTimer) clearInterval(annTimer);
+  annTimer = setInterval(() => fetchAnnouncements(false), ANN_REFRESH_MS);
+  // Streak lists: render now if data is available; otherwise the
+  // initActivity success path will call renderHotStreaks() once data arrives.
+  renderHotStreaks();
+}
+
+// ── Announcement marquee fetcher (kept; only the body card was removed) ──
+async function fetchAnnouncements(isManual) {
+  const marqueeEl = document.getElementById('annMarqueeText');
+  if (!marqueeEl) return;
+  try {
+    const res = await fetch(ANN_API + (ANN_API.includes('?') ? '&' : '?') + '_t=' + Date.now());
+    const raw = (await res.text() || "").trim();
+    if (raw) {
+      const plain = htmlToPlainText(raw);
+      // Pad with separators so the message reads cleanly when looping
+      marqueeEl.textContent = plain + "  •  " + plain + "  •  ";
+    } else {
+      marqueeEl.textContent = "No new announcements at this time.  •  ";
+    }
+  } catch (err) {
+    console.error('Announcements fetch failed:', err);
+    // Only overwrite the loading placeholder; don't wipe live content
+    if (marqueeEl.textContent.includes('Loading')) {
+      marqueeEl.textContent = "Welcome to VDM — keep moving, keep posting!  •  ";
+    }
+  }
+}
+
+function htmlToPlainText(html) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return (tmp.textContent || tmp.innerText || "").replace(/\s+/g, ' ').trim();
+}
+
+// ── Streak rendering ─────────────────────────────────────────────────
+function ymd(d) {
+  return d.getFullYear() + '-' +
+         String(d.getMonth() + 1).padStart(2, '0') + '-' +
+         String(d.getDate()).padStart(2, '0');
+}
+
+// Timezone-safe day key extractor. Returns "YYYY-MM-DD" without any
+// UTC roundtrip for ISO/DMY strings — important for users in negative
+// timezones where `new Date('2026-05-03')` would otherwise resolve to
+// the previous local day. parseFlexDate is left untouched (used elsewhere).
+function dayKey(rawValue) {
+  if (rawValue == null || rawValue === '') return null;
+  const s = String(rawValue).trim();
+  // ISO YYYY-MM-DD (with or without time suffix)
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+  // DD/MM/YYYY or DD-MM-YYYY
+  const dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  if (dmy) {
+    const d  = parseInt(dmy[1], 10);
+    const mo = parseInt(dmy[2], 10);
+    const yr = parseInt(dmy[3], 10);
+    if (mo <= 12) {
+      return yr + '-' + String(mo).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    }
+  }
+  // Sheets serial number (uses local-time constructor, safe)
+  if (/^\d{5}$/.test(s)) {
+    const epoch = new Date(1899, 11, 30);
+    epoch.setDate(epoch.getDate() + parseInt(s, 10));
+    return ymd(epoch);
+  }
+  // Fallback: best-effort parse + local components
+  const d = new Date(s);
+  return isNaN(d) ? null : ymd(d);
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+    { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]
+  ));
+}
+
+function renderHotStreaks() {
+  const firstListEl = document.getElementById('streakFirstList');
+  const dailyListEl = document.getElementById('streakDailyList');
+  if (!firstListEl || !dailyListEl) return; // panel not in DOM yet
+
+  // Wait state if activity data isn't ready
+  if (!actLoaded) {
+    firstListEl.innerHTML = '<div class="streak-empty">⏳ Waiting for activity data…</div>';
+    dailyListEl.innerHTML = '<div class="streak-empty">⏳ Waiting for activity data…</div>';
+    return;
+  }
+
+  // Today (local calendar day, midnight)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayKey = ymd(today);
+
+  // Build the required-days list from May 1 of current year through today
+  const startDate = new Date(today.getFullYear(), STREAK_START_MONTH, STREAK_START_DAY);
+  startDate.setHours(0, 0, 0, 0);
+
+  // Prepare display sub-text for First-Today card
+  document.getElementById('streakFirstDate').textContent =
+    today.toLocaleDateString(undefined, { weekday:'long', day:'numeric', month:'long' });
+
+  if (today < startDate) {
+    // Pre-May edge case — streak window hasn't opened yet
+    document.getElementById('streakDailyDays').textContent = '0';
+    dailyListEl.innerHTML = '<div class="streak-empty">🗓️ The May streak window has not yet started.</div>';
+    firstListEl.innerHTML = '<div class="streak-empty">🌱 No participants have started yet today.</div>';
+    document.getElementById('streakFirstCount').textContent = '0';
+    document.getElementById('streakDailyCount').textContent = '0';
+    document.getElementById('streakUpdated').textContent =
+      new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+    return;
+  }
+
+  const requiredDays = [];
+  const cursor = new Date(startDate);
+  while (cursor <= today) {
+    requiredDays.push(ymd(cursor));
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  document.getElementById('streakDailyDays').textContent = requiredDays.length;
+
+  // Group all entries by participant (User Name + Shakha) → set of unique days
+  const participants = {};
+  actRawData.forEach(r => {
+    const name   = String(r[ACT_KEYS.name]   || '').trim();
+    const shakha = String(r[ACT_KEYS.shakha] || '').trim();
+    if (!name) return;
+
+    // TZ-safe day extraction: avoids UTC-midnight shifting the calendar day
+    const dateKey = dayKey(r[ACT_KEYS.date]);
+    if (!dateKey) return;
+
+    const key = name + '|||' + shakha;
+    if (!participants[key]) {
+      participants[key] = {
+        name, shakha,
+        dates: new Set(),
+        totalKm: 0,
+        todayActivity: null,
+      };
+    }
+    participants[key].dates.add(dateKey);
+    participants[key].totalKm += (parseFloat(r[ACT_KEYS.count]) || 0);
+    // Capture the activity name they posted today (used as a label)
+    if (dateKey === todayKey && !participants[key].todayActivity) {
+      participants[key].todayActivity = String(r[ACT_KEYS.activity] || '').trim();
+    }
+  });
+
+  // ── List 1: First-time today ────────────────────────────────
+  // Their EARLIEST activity day equals today (i.e. they have never posted before)
+  const firstTimers = [];
+  Object.values(participants).forEach(p => {
+    if (!p.dates.has(todayKey)) return;
+    let earliest = null;
+    p.dates.forEach(d => { if (earliest === null || d < earliest) earliest = d; });
+    if (earliest === todayKey) firstTimers.push(p);
+  });
+
+  // ── List 2: Continuous since May 1 ──────────────────────────
+  const streakers = [];
+  Object.values(participants).forEach(p => {
+    const allCovered = requiredDays.every(d => p.dates.has(d));
+    if (allCovered) streakers.push(p);
+  });
+  // Sort streakers by total km desc as a soft tiebreaker, then name
+  streakers.sort((a, b) => (b.totalKm - a.totalKm) || a.name.localeCompare(b.name));
+  firstTimers.sort((a, b) => a.name.localeCompare(b.name));
+
+  // Render
+  document.getElementById('streakFirstCount').textContent = firstTimers.length;
+  document.getElementById('streakDailyCount').textContent = streakers.length;
+
+  if (firstTimers.length === 0) {
+    firstListEl.innerHTML = '<div class="streak-empty">🌱 No first-time participants yet today.<br>Be the spark — log an activity!</div>';
+  } else {
+    firstListEl.innerHTML = firstTimers.map((p, i) => {
+      const sub = p.todayActivity ? `${escapeHtml(p.shakha || '—')} · ${escapeHtml(p.todayActivity)}`
+                                   : escapeHtml(p.shakha || '—');
+      return `
+        <div class="streak-row">
+          <div class="streak-rank">${String(i + 1).padStart(2, '0')}</div>
+          <div class="streak-info">
+            <div class="streak-name">${escapeHtml(p.name)}</div>
+            <div class="streak-shakha">${sub}</div>
+          </div>
+          <div class="streak-badge new">NEW</div>
+        </div>`;
+    }).join('');
+  }
+
+  if (streakers.length === 0) {
+    dailyListEl.innerHTML = `<div class="streak-empty">🎯 No one has logged on every single day from ${escapeHtml(formatDayMonth(startDate))} to today yet.<br>Could you be the first?</div>`;
+  } else {
+    dailyListEl.innerHTML = streakers.map((p, i) => `
+      <div class="streak-row">
+        <div class="streak-rank">${String(i + 1).padStart(2, '0')}</div>
+        <div class="streak-info">
+          <div class="streak-name">${escapeHtml(p.name)}</div>
+          <div class="streak-shakha">${escapeHtml(p.shakha || '—')}</div>
+        </div>
+        <div class="streak-badge">${requiredDays.length}d · ${p.totalKm.toFixed(1)} km</div>
+      </div>`).join('');
+  }
+
+  document.getElementById('streakUpdated').textContent =
+    new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+}
+
+function formatDayMonth(d) {
+  return d.toLocaleDateString(undefined, { day:'numeric', month:'long' });
+}
+
+// ── Startup: load activity data immediately (Hot Streaks needs it) ──
 initActivity();
+// ── Startup: Hot Streaks is the default tab — boot it up too ──
+initStreaks();
 
 </script>
 
