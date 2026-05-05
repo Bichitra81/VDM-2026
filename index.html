@@ -606,7 +606,6 @@ body::before {
   border-radius: 999px;
 }
 
-/* Make shakha dropdown wider to comfortably show "code · name · country" */
 .filter-select#shakhaFilter { min-width: 260px; }
 .filter-select optgroup {
   background: var(--navy-mid);
@@ -626,6 +625,152 @@ body::before {
   .gender-legend { gap: 14px; }
   .gender-count { font-size: 16px; }
   .filter-select#shakhaFilter { min-width: 180px; }
+}
+
+/* ═══════════════════════════════════════════════
+   SHAKHA PARTICIPANTS LIST (visible when a specific shakha is selected)
+═══════════════════════════════════════════════ */
+.participants-card {
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 26px;
+  margin-bottom: 18px;
+  display: none; /* shown only when a shakha is selected */
+}
+.participants-card.visible { display: block; }
+.participants-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.participants-title {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  font-weight: 600;
+}
+.participants-title strong {
+  color: var(--text-white);
+  font-weight: 700;
+}
+.participants-title em {
+  font-style: normal;
+  color: var(--saffron);
+}
+.participants-count-pill {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gold);
+  background: rgba(245,166,35,0.1);
+  border: 1px solid rgba(245,166,35,0.35);
+  border-radius: 999px;
+  padding: 4px 14px;
+}
+.participants-search {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-bright);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: var(--text-white);
+  font-size: 13.5px;
+  font-family: inherit;
+  margin-bottom: 14px;
+  transition: border-color 0.15s ease;
+}
+.participants-search:focus {
+  outline: none;
+  border-color: rgba(245,166,35,0.5);
+}
+.participants-search::placeholder { color: var(--text-muted); opacity: 0.7; }
+
+.participants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+  max-height: 480px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.participants-grid::-webkit-scrollbar { width: 6px; }
+.participants-grid::-webkit-scrollbar-track { background: transparent; }
+.participants-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+.participants-grid::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+
+.participant-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.participant-item:hover {
+  background: rgba(255,255,255,0.05);
+  border-color: var(--border-bright);
+}
+.participant-num {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  width: 26px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.participant-info {
+  flex: 1;
+  min-width: 0;
+}
+.participant-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.participant-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.participant-gender-tag {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.participant-gender-tag.male   { background: rgba(77,157,224,0.15); color: #4D9DE0; border: 1px solid rgba(77,157,224,0.35); }
+.participant-gender-tag.female { background: rgba(239,71,111,0.15); color: #EF476F; border: 1px solid rgba(239,71,111,0.35); }
+.participant-gender-tag.other  { background: rgba(122,150,188,0.15); color: var(--text-muted); border: 1px solid rgba(122,150,188,0.3); }
+
+.participants-empty {
+  text-align: center;
+  padding: 30px 20px;
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .participants-card { padding: 16px 18px; }
+  .participants-grid { grid-template-columns: 1fr; max-height: 380px; }
 }
 
 /* ═══════════════════════════════════════════════
@@ -2389,6 +2534,22 @@ input[type="date"].mob-filter-control::-webkit-calendar-picker-indicator {
       </div>
     </div>
 
+    <!-- Shakha Participants List (visible only when a specific shakha is filtered) -->
+    <div class="participants-card" id="participantsCard">
+      <div class="participants-head">
+        <span class="participants-title">👥 Participants in <em><span id="participantsShakhaName">—</span></em></span>
+        <span class="participants-count-pill" id="participantsCount">0</span>
+      </div>
+      <input type="text"
+             class="participants-search"
+             id="participantsSearch"
+             placeholder="🔍 Search by name, city, or country…"
+             oninput="filterParticipantsList()" />
+      <div class="participants-grid" id="participantsList">
+        <div class="participants-empty">No participants yet.</div>
+      </div>
+    </div>
+
   </div><!-- /panel-main -->
 </div><!-- /panel-reg -->
 
@@ -3012,9 +3173,128 @@ function renderRegistrations(data, selectedCountry, selectedShakha) {
   renderRegChart(sorted.slice(0, 10));
   renderTable(sorted);
   renderGenderDistribution(filtered);
+  renderParticipantsList(filtered, selectedShakha);
 
   const now = new Date();
   document.getElementById("lastUpdated").textContent = now.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+}
+
+// ── Shakha Participants List ─────────────────────────────────────────
+// Shows the actual people inside a shakha when a specific shakha is selected.
+// Hidden in the "All Shakhas" view since listing every registrant would be
+// noisy and redundant with the top-shakhas table above.
+
+// Defensive name resolver: tries common field-name variants the Sheet might use
+const REG_NAME_KEYS = [
+  'User Name', 'Name', 'Full Name', 'Participant Name',
+  'User Full Name', 'Username'
+];
+function getRegName(item) {
+  for (const k of REG_NAME_KEYS) {
+    if (item[k] != null && String(item[k]).trim() !== '') return String(item[k]).trim();
+  }
+  // Try first + last combinations
+  const fn = (item['User First Name'] || item['First Name'] || '').toString().trim();
+  const ln = (item['User Last Name']  || item['Last Name']  || '').toString().trim();
+  if (fn || ln) return (fn + ' ' + ln).trim();
+  return ''; // empty signals "no name available"
+}
+
+// Small helper for safe HTML output (define only if not already defined)
+function regEscapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+    { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]
+  ));
+}
+
+let _participantsCache = []; // backing store for in-card search
+
+function renderParticipantsList(filtered, selectedShakha) {
+  const card = document.getElementById('participantsCard');
+  if (!card) return;
+
+  // Hide the card entirely in the "All Shakhas" view — listing thousands of
+  // names would be unhelpful and the top-shakhas table already shows the rollup
+  if (!selectedShakha || selectedShakha === 'ALL') {
+    card.classList.remove('visible');
+    _participantsCache = [];
+    const search = document.getElementById('participantsSearch');
+    if (search) search.value = '';
+    return;
+  }
+
+  // Resolve the shakha name for the header title
+  const shakhaInfo = SHAKHA_MAP[selectedShakha];
+  const shakhaName = shakhaInfo ? shakhaInfo.name : selectedShakha;
+  document.getElementById('participantsShakhaName').textContent = shakhaName;
+
+  // The `filtered` argument is already country-filtered; narrow to this shakha
+  const matches = filtered.filter(item => {
+    const raw = String(item['Unique Shakha Code'] || '').trim();
+    const resolved = resolveShakha(raw);
+    return resolved && resolved.code === selectedShakha;
+  });
+
+  // Detect gender column once (uses the same helper as the gender chart)
+  const genderKey = matches.length > 0 ? detectGenderKey(matches[0]) : null;
+
+  // Build the cache that powers both the initial render and live search
+  _participantsCache = matches.map(item => {
+    const name    = getRegName(item) || '(name not provided)';
+    const city    = (item['User City'] || item['City'] || '').toString().trim();
+    const country = (item['User Country'] || item['Country'] || '').toString().trim();
+    const gender  = genderKey ? normaliseGender(item[genderKey]) : 'other';
+    return { name, city, country, gender };
+  }).sort((a, b) => a.name.localeCompare(b.name));
+
+  document.getElementById('participantsCount').textContent = _participantsCache.length;
+  card.classList.add('visible');
+
+  // Reset search box when shakha changes (don't preserve a stale query)
+  const search = document.getElementById('participantsSearch');
+  if (search) search.value = '';
+
+  paintParticipants(_participantsCache);
+}
+
+function paintParticipants(list) {
+  const el = document.getElementById('participantsList');
+  if (!el) return;
+
+  if (list.length === 0) {
+    el.innerHTML = '<div class="participants-empty">No participants match your search.</div>';
+    return;
+  }
+
+  el.innerHTML = list.map((p, i) => {
+    const metaParts = [];
+    if (p.city)    metaParts.push(regEscapeHtml(p.city));
+    if (p.country) metaParts.push(regEscapeHtml(p.country));
+    const meta = metaParts.join(' · ') || '—';
+    const tag = p.gender === 'male'   ? '<span class="participant-gender-tag male">M</span>'
+              : p.gender === 'female' ? '<span class="participant-gender-tag female">F</span>'
+              :                         '';
+    return `
+      <div class="participant-item">
+        <div class="participant-num">${String(i + 1).padStart(2, '0')}</div>
+        <div class="participant-info">
+          <div class="participant-name">${regEscapeHtml(p.name)}</div>
+          <div class="participant-meta">${meta}</div>
+        </div>
+        ${tag}
+      </div>`;
+  }).join('');
+}
+
+function filterParticipantsList() {
+  const q = (document.getElementById('participantsSearch')?.value || '').trim().toLowerCase();
+  if (!q) { paintParticipants(_participantsCache); return; }
+  const filtered = _participantsCache.filter(p =>
+    p.name.toLowerCase().includes(q) ||
+    p.city.toLowerCase().includes(q) ||
+    p.country.toLowerCase().includes(q)
+  );
+  paintParticipants(filtered);
 }
 
 // ── Gender Distribution ──────────────────────────────────────────────
