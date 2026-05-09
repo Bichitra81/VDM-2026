@@ -2240,6 +2240,88 @@ input[type="date"].mob-filter-control::-webkit-calendar-picker-indicator {
   border-top: 1px solid var(--border);
 }
 
+/* ═══════════════════════════════════════════════
+   DIAGNOSTIC BANNER (data-loading errors)
+═══════════════════════════════════════════════ */
+.diag-banner {
+  display: none;
+  background: linear-gradient(135deg, rgba(239,71,111,0.18), rgba(245,166,35,0.10));
+  border: 1px solid rgba(239,71,111,0.45);
+  color: var(--text-white);
+  padding: 14px 22px;
+  border-radius: 0;
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+  box-shadow: 0 4px 16px rgba(239,71,111,0.18);
+}
+.diag-banner.visible { display: block; }
+.diag-banner-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.diag-banner-icon {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.diag-banner-body { flex: 1; min-width: 200px; }
+.diag-banner-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: #FFD7E0;
+  margin-bottom: 4px;
+  letter-spacing: 0.3px;
+}
+.diag-banner-msg {
+  color: var(--text-light);
+  font-family: 'Menlo', 'Consolas', monospace;
+  font-size: 12px;
+  background: rgba(0,0,0,0.25);
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-top: 6px;
+  word-break: break-word;
+  white-space: pre-wrap;
+  max-height: 140px;
+  overflow-y: auto;
+}
+.diag-banner-hint {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-top: 6px;
+}
+.diag-banner-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.diag-banner-btn {
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.20);
+  color: var(--text-white);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s ease;
+}
+.diag-banner-btn:hover { background: rgba(255,255,255,0.18); }
+.diag-banner-btn.primary {
+  background: linear-gradient(135deg, var(--saffron), var(--gold));
+  border-color: transparent;
+  color: #1a1a1a;
+}
+.diag-banner-btn.primary:hover { filter: brightness(1.1); }
+
 .inspire-label {
   text-align: center;
   font-size: 10px;
@@ -2335,6 +2417,24 @@ input[type="date"].mob-filter-control::-webkit-calendar-picker-indicator {
 </style>
 </head>
 <body>
+
+<!-- ══════════════════════════════════════
+     DIAGNOSTIC BANNER (visible only on errors)
+══════════════════════════════════════ -->
+<div class="diag-banner" id="diagBanner" role="alert">
+  <div class="diag-banner-row">
+    <span class="diag-banner-icon">⚠️</span>
+    <div class="diag-banner-body">
+      <div class="diag-banner-title" id="diagBannerTitle">Activity data could not be loaded</div>
+      <div class="diag-banner-msg" id="diagBannerMsg">—</div>
+      <div class="diag-banner-hint" id="diagBannerHint"></div>
+    </div>
+    <div class="diag-banner-actions">
+      <button class="diag-banner-btn primary" type="button" onclick="retryActivityLoad()">↻ Retry</button>
+      <button class="diag-banner-btn" type="button" onclick="document.getElementById('diagBanner').classList.remove('visible')">Dismiss</button>
+    </div>
+  </div>
+</div>
 
 <!-- ══════════════════════════════════════
      LOADING OVERLAY
@@ -3481,18 +3581,71 @@ let actLoaded = false;
 setTimeout(() => { document.getElementById('appLoader').classList.add('hidden'); }, 8000);
 
 async function initActivity() {
+  // Hide any previous diagnostic banner before we try again
+  hideDiagBanner();
+
   try {
+    // Catch HTTP failures explicitly (fetch only throws on network error,
+    // not on 4xx/5xx)
     const res = await fetch(ACT_API);
-    const json = await res.json();
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status} ${res.statusText} — endpoint is not returning a successful response`);
+    }
+
+    // The response may not actually be JSON — Apps Script sometimes returns
+    // an HTML error page when the deployment is broken. Read the text first
+    // so we can give a useful diagnostic if JSON parsing fails.
+    const rawText = await res.text();
+    let json;
+    try {
+      json = JSON.parse(rawText);
+    } catch (parseErr) {
+      throw new Error(
+        'The endpoint returned non-JSON content (' + (rawText.length) +
+        ' chars). First 200 chars: ' + rawText.slice(0, 200).replace(/\s+/g, ' ')
+      );
+    }
+
+    // Validate that the response is an array (the expected shape)
+    if (!Array.isArray(json)) {
+      throw new Error(
+        'Expected an array of activity rows, but got ' + typeof json +
+        '. Keys: ' + (json && typeof json === 'object' ? Object.keys(json).slice(0, 8).join(', ') : 'n/a')
+      );
+    }
+
+    const totalRowsBeforeFilter = json.length;
+
     actRawData = json.filter(row => {
-      const sh = row[ACT_KEYS.shakha] || "";
-      const ac = row[ACT_KEYS.activity] || "";
+      // Coerce to strings — Google Sheets / Apps Script may return numbers,
+      // dates, or other types when a column happens to contain numeric or
+      // date-like values. Calling .includes/.trim on a number throws.
+      const sh = String(row[ACT_KEYS.shakha]   ?? "").trim();
+      const ac = String(row[ACT_KEYS.activity] ?? "");
       // Data-quality rule: exclude any single activity entry greater than 50 km.
       // Applied at ingestion so it propagates to ALL calcs, charts and summaries.
       const km = parseFloat(row[ACT_KEYS.count]);
       if (!isNaN(km) && km > 50) return false;
-      return sh.toString().trim() !== "" && !ac.includes("Ashtanga") && !ac.includes("Surya Namaskar");
+      return sh !== "" && !ac.includes("Ashtanga") && !ac.includes("Surya Namaskar");
     });
+
+    // ── Critical diagnostic: response had rows but filter dropped them all ──
+    // Most often this means the column names in the sheet don't match what
+    // ACT_KEYS expects (e.g. "Shakha Name" was renamed). Surface this loudly.
+    if (totalRowsBeforeFilter > 0 && actRawData.length === 0) {
+      const sampleKeys = Object.keys(json[0] || {});
+      showDiagBanner({
+        title: 'Activity data loaded but no rows passed validation',
+        msg:
+          'The API returned ' + totalRowsBeforeFilter + ' rows, but every row was filtered out. ' +
+          'Most likely cause: the column names in the Google Sheet don\'t match what the dashboard expects.\n\n' +
+          'Expected columns: "' + ACT_KEYS.name + '", "' + ACT_KEYS.shakha + '", "' +
+          ACT_KEYS.activity + '", "' + ACT_KEYS.count + '", "' + ACT_KEYS.date + '"\n\n' +
+          'Actual columns in the response: ' + sampleKeys.join(', '),
+        hint: 'Open the activity sheet and verify the header row matches the expected column names exactly (case-sensitive). The sheet may have been edited or a Google Sheet auto-rename may have occurred.',
+      });
+      console.warn('[VDM] Activity data filter dropped all rows. Sample row:', json[0]);
+    }
 
     actLoaded = true;
     document.getElementById('appLoader').classList.add('hidden');
@@ -3504,17 +3657,73 @@ async function initActivity() {
     renderActivity();
     // Recompute Hot Streaks now that data is in
     if (streaksLoaded && typeof renderHotStreaks === 'function') renderHotStreaks();
-  } catch(e) {
+  } catch (e) {
+    console.error('[VDM] initActivity failed:', e);
     document.getElementById('appLoader').classList.add('hidden');
     document.getElementById('act-loader').textContent = 'OFFLINE · Could not load activity data';
-    // Surface the offline state in Hot Streaks too
-    if (streaksLoaded && typeof renderHotStreaks === 'function') {
-      const f = document.getElementById('streakFirstList');
-      const d = document.getElementById('streakDailyList');
-      if (f) f.innerHTML = '<div class="streak-empty">⚠ Activity data is offline.</div>';
-      if (d) d.innerHTML = '<div class="streak-empty">⚠ Activity data is offline.</div>';
-    }
+
+    showDiagBanner({
+      title: 'Activity data could not be loaded',
+      msg: (e && e.message) || String(e),
+      hint:
+        'Common causes: 1) The Apps Script deployment URL has changed — check ACT_API in the script. ' +
+        '2) The Apps Script web app is no longer accessible (re-deploy with "Anyone" access). ' +
+        '3) Network or CORS error — open the browser DevTools Network tab to inspect the failed request.',
+    });
+
+    // Surface the offline state across ALL Hot Streaks sections, not just the
+    // streak lists, so the user sees a consistent error state on the landing page.
+    paintHotStreaksOffline();
   }
+}
+
+// Re-attempt the activity fetch (called from the diagnostic banner's Retry button)
+function retryActivityLoad() {
+  // Reset state so initActivity can run cleanly
+  actLoaded = false;
+  actRawData = [];
+  document.getElementById('act-loader').style.display = '';
+  document.getElementById('act-loader').textContent = 'Loading activity data…';
+  document.getElementById('act-content').style.display = 'none';
+  document.getElementById('actStatusBadge').textContent = 'LOADING';
+  initActivity();
+}
+
+// Show / hide the top diagnostic banner
+function showDiagBanner({ title, msg, hint }) {
+  const b = document.getElementById('diagBanner');
+  if (!b) return;
+  document.getElementById('diagBannerTitle').textContent = title || 'A problem occurred';
+  document.getElementById('diagBannerMsg').textContent   = msg   || '';
+  document.getElementById('diagBannerHint').textContent  = hint  || '';
+  b.classList.add('visible');
+}
+function hideDiagBanner() {
+  const b = document.getElementById('diagBanner');
+  if (b) b.classList.remove('visible');
+}
+
+// Paint the offline state across every Hot Streaks section so the user sees
+// a consistent, obvious failure rather than a half-loaded landing page.
+function paintHotStreaksOffline() {
+  const offline = '<div class="streak-empty">⚠ Activity data is offline. See the banner above for details.</div>';
+  const ids = ['streakFirstList', 'streakDailyList', 'top5TodayList', 'top5WeekList'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = offline;
+  });
+  // Goal banner: show "—" rather than 0 so it doesn't look like progress is real
+  const goalCurrent = document.getElementById('goalCurrent');
+  if (goalCurrent) goalCurrent.textContent = '—';
+  const goalPct = document.getElementById('goalPct');
+  if (goalPct) goalPct.textContent = '—';
+  const goalRem = document.getElementById('goalRemaining');
+  if (goalRem) goalRem.textContent = 'data unavailable';
+  // Pie center
+  const distCenter = document.getElementById('distCenterNum');
+  if (distCenter) distCenter.textContent = '—';
+  const distLegend = document.getElementById('distLegend');
+  if (distLegend) distLegend.innerHTML = '<div class="participants-empty">⚠ Activity data is offline.</div>';
 }
 
 function setupActFilters() {
@@ -3704,12 +3913,12 @@ function renderActivity() {
   const dateTo   = filters.dateTo   ? new Date(filters.dateTo   + 'T23:59:59') : null;
 
   const filtered = actRawData.filter(r => {
-    if (filters.name && !(r[ACT_KEYS.name]||"").toLowerCase().includes(filters.name)) return false;
-    if (filters.act  && r[ACT_KEYS.activity] !== filters.act) return false;
-    if (filters.age  && r[ACT_KEYS.age] !== filters.age) return false;
+    if (filters.name && !String(r[ACT_KEYS.name] ?? "").toLowerCase().includes(filters.name)) return false;
+    if (filters.act  && String(r[ACT_KEYS.activity] ?? "") !== filters.act) return false;
+    if (filters.age  && String(r[ACT_KEYS.age]      ?? "") !== filters.age) return false;
 
     if (filters.shk) {
-      const rowShakha = (r[ACT_KEYS.shakha] || '').toString().trim();
+      const rowShakha = String(r[ACT_KEYS.shakha] ?? '').trim();
       // Primary: name match via SHAKHA_MAP. Secondary: row stores the code itself.
       if (rowShakha !== expectedShakhaName && rowShakha !== filters.shk) return false;
     }
