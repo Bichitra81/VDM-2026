@@ -607,14 +607,18 @@ body::before {
 }
 
 .filter-select#shakhaFilter { min-width: 260px; }
-.filter-select optgroup {
+.filter-select optgroup,
+.act-filter-select optgroup,
+.mob-filter-control optgroup {
   background: var(--navy-mid);
   color: var(--gold);
   font-weight: 700;
   font-style: normal;
   letter-spacing: 0.5px;
 }
-.filter-select option {
+.filter-select option,
+.act-filter-select option,
+.mob-filter-control option {
   background: var(--navy-card);
   color: var(--text-white);
 }
@@ -2575,12 +2579,8 @@ input[type="date"].mob-filter-control::-webkit-calendar-picker-indicator {
         <select id="f-age" class="act-filter-select"><option value="">All Ages</option></select>
       </div>
       <div class="act-filter-group">
-        <label class="act-filter-label">Location (Country · City)</label>
-        <select id="f-location" class="act-filter-select"><option value="">🌍 All Locations</option></select>
-      </div>
-      <div class="act-filter-group">
-        <label class="act-filter-label">Shakha Unit</label>
-        <select id="f-shakha" class="act-filter-select"><option value="">All Units</option></select>
+        <label class="act-filter-label">Shakha</label>
+        <select id="f-shakha" class="act-filter-select"><option value="">🏛 All Shakhas</option></select>
       </div>
       <div class="act-filter-group">
         <label class="act-filter-label">From Date <span style="opacity:0.55;font-weight:400;font-size:9.5px;">(DD/MM/YYYY)</span></label>
@@ -2850,13 +2850,8 @@ input[type="date"].mob-filter-control::-webkit-calendar-picker-indicator {
     </div>
 
     <div class="mob-filter-section">
-      <label class="mob-filter-label">Location (Country · City)</label>
-      <select id="mf-location" class="mob-filter-control"><option value="">🌍 All Locations</option></select>
-    </div>
-
-    <div class="mob-filter-section">
-      <label class="mob-filter-label">Shakha Unit</label>
-      <select id="mf-shakha" class="mob-filter-control"><option value="">All Units</option></select>
+      <label class="mob-filter-label">Shakha</label>
+      <select id="mf-shakha" class="mob-filter-control"><option value="">🏛 All Shakhas</option></select>
     </div>
 
     <div class="mob-filter-section">
@@ -3536,22 +3531,14 @@ function setupActFilters() {
 
   fillBoth('f-activity', 'mf-activity', getU(ACT_KEYS.activity));
   fillBoth('f-age',      'mf-age',      getU(ACT_KEYS.age));
-  fillBoth('f-shakha',   'mf-shakha',   getU(ACT_KEYS.shakha));
 
-  // Build merged Country · City options for both desktop and mobile
-  const locationSet = new Set();
-  actRawData.forEach(r => {
-    const country = (r[ACT_KEYS.country] || "").trim();
-    const city    = (r[ACT_KEYS.city]    || "").trim();
-    if (country && city) locationSet.add(`${country} · ${city}`);
-    else if (country)    locationSet.add(country);
-  });
-  const locVals = [...locationSet].sort();
-  ['f-location', 'mf-location'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    locVals.forEach(loc => { const o=document.createElement('option'); o.value=loc; o.textContent=loc; el.appendChild(o); });
-  });
+  // ── Shakha dropdown (mirrors the Registrations tab pattern) ──
+  // Lists every shakha from SHAKHA_MAP, grouped by country via <optgroup>,
+  // each option labelled "#code · name". The stored value is the shakha
+  // code; row matching is done by resolving SHAKHA_MAP[code].name and
+  // comparing against the row's Shakha Name field.
+  populateActShakhaSelect('f-shakha');
+  populateActShakhaSelect('mf-shakha');
 
   // Desktop filter listeners
   document.querySelectorAll('#panel-act input, #panel-act select').forEach(el => el.addEventListener('input', renderActivity));
@@ -3559,12 +3546,49 @@ function setupActFilters() {
   document.getElementById('f-date-to').addEventListener('change', renderActivity);
 }
 
+function populateActShakhaSelect(elId) {
+  const sel = document.getElementById(elId);
+  if (!sel) return;
+  // Don't double-populate (setupActFilters can run more than once in dev)
+  if (sel.dataset.shakhaBuilt === '1') return;
+  sel.dataset.shakhaBuilt = '1';
+
+  // Group every shakha (excluding the placeholder code "1") by country code
+  const byCountry = {};
+  Object.entries(SHAKHA_MAP).forEach(([code, info]) => {
+    if (code === '1') return;
+    const cc = info.country || 'Others';
+    if (!byCountry[cc]) byCountry[cc] = [];
+    byCountry[cc].push({ code, name: info.name });
+  });
+
+  const sortedCC = Object.keys(byCountry).sort((a, b) => {
+    const an = COUNTRY_NAMES[a] || a;
+    const bn = COUNTRY_NAMES[b] || b;
+    return an.localeCompare(bn);
+  });
+
+  sortedCC.forEach(cc => {
+    const countryName = COUNTRY_NAMES[cc] || cc;
+    const grp = document.createElement('optgroup');
+    grp.label = `${countryName} (${cc})`;
+    byCountry[cc]
+      .sort((a, b) => parseInt(a.code) - parseInt(b.code))
+      .forEach(({ code, name }) => {
+        const o = document.createElement('option');
+        o.value = code;
+        o.textContent = `#${String(code).padStart(2, '0')} · ${name}`;
+        grp.appendChild(o);
+      });
+    sel.appendChild(grp);
+  });
+}
+
 // ── Sync mobile filter fields FROM current desktop filter state ──
 function syncMobFromDesktop() {
   document.getElementById('mf-name').value      = document.getElementById('f-name').value;
   document.getElementById('mf-activity').value  = document.getElementById('f-activity').value;
   document.getElementById('mf-age').value       = document.getElementById('f-age').value;
-  document.getElementById('mf-location').value  = document.getElementById('f-location').value;
   document.getElementById('mf-shakha').value    = document.getElementById('f-shakha').value;
   document.getElementById('mf-date-from').value = document.getElementById('f-date-from').value;
   document.getElementById('mf-date-to').value   = document.getElementById('f-date-to').value;
@@ -3575,7 +3599,6 @@ function mobApplyFilters() {
   document.getElementById('f-name').value      = document.getElementById('mf-name').value;
   document.getElementById('f-activity').value  = document.getElementById('mf-activity').value;
   document.getElementById('f-age').value       = document.getElementById('mf-age').value;
-  document.getElementById('f-location').value  = document.getElementById('mf-location').value;
   document.getElementById('f-shakha').value    = document.getElementById('mf-shakha').value;
   document.getElementById('f-date-from').value = document.getElementById('mf-date-from').value;
   document.getElementById('f-date-to').value   = document.getElementById('mf-date-to').value;
@@ -3587,7 +3610,7 @@ function mobApplyFilters() {
 
 // ── Reset all mobile filter fields + desktop fields ──
 function mobResetFilters() {
-  ['mf-name','mf-activity','mf-age','mf-location','mf-shakha','mf-date-from','mf-date-to']
+  ['mf-name','mf-activity','mf-age','mf-shakha','mf-date-from','mf-date-to']
     .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
   resetActFilters();
 }
@@ -3602,8 +3625,7 @@ function updateChipsBar() {
     { id: 'f-name',      label: v => `"${v}"` },
     { id: 'f-activity',  label: v => v },
     { id: 'f-age',       label: v => v },
-    { id: 'f-location',  label: v => `📍 ${v}` },
-    { id: 'f-shakha',    label: v => v },
+    { id: 'f-shakha',    label: v => `🏛 ${SHAKHA_MAP[v]?.name || v}` },
     { id: 'f-date-from', label: v => `From ${fmtDDMMYYYY(v)}` },
     { id: 'f-date-to',   label: v => `To ${fmtDDMMYYYY(v)}` },
   ];
@@ -3649,9 +3671,9 @@ function updateChipsBar() {
 }
 
 function resetActFilters() {
-  ['f-name','f-activity','f-age','f-location','f-shakha','f-date-from','f-date-to']
+  ['f-name','f-activity','f-age','f-shakha','f-date-from','f-date-to']
     .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
-  ['mf-name','mf-activity','mf-age','mf-location','mf-shakha','mf-date-from','mf-date-to']
+  ['mf-name','mf-activity','mf-age','mf-shakha','mf-date-from','mf-date-to']
     .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
   renderActivity();
   updateChipsBar();
@@ -3662,11 +3684,15 @@ function renderActivity() {
     name:     document.getElementById('f-name').value.toLowerCase(),
     act:      document.getElementById('f-activity').value,
     age:      document.getElementById('f-age').value,
-    location: document.getElementById('f-location').value,
-    shk:      document.getElementById('f-shakha').value,
+    shk:      document.getElementById('f-shakha').value,   // shakha CODE (e.g. "2", "23")
     dateFrom: document.getElementById('f-date-from').value,
     dateTo:   document.getElementById('f-date-to').value
   };
+
+  // Resolve the selected shakha code → expected name in the activity sheet.
+  // Activity rows store free-text Shakha Name, so we compare against
+  // SHAKHA_MAP[code].name. Fall back to code matching if the row stores codes.
+  const expectedShakhaName = filters.shk ? (SHAKHA_MAP[filters.shk]?.name || '') : '';
 
   // Detect date column once from first row that has one
   let detectedDateKey = ACT_KEYS.date;
@@ -3681,13 +3707,11 @@ function renderActivity() {
     if (filters.name && !(r[ACT_KEYS.name]||"").toLowerCase().includes(filters.name)) return false;
     if (filters.act  && r[ACT_KEYS.activity] !== filters.act) return false;
     if (filters.age  && r[ACT_KEYS.age] !== filters.age) return false;
-    if (filters.shk  && r[ACT_KEYS.shakha] !== filters.shk) return false;
 
-    if (filters.location) {
-      const country = (r[ACT_KEYS.country] || "").trim();
-      const city    = (r[ACT_KEYS.city]    || "").trim();
-      const rowLoc  = country && city ? `${country} · ${city}` : country;
-      if (rowLoc !== filters.location) return false;
+    if (filters.shk) {
+      const rowShakha = (r[ACT_KEYS.shakha] || '').toString().trim();
+      // Primary: name match via SHAKHA_MAP. Secondary: row stores the code itself.
+      if (rowShakha !== expectedShakhaName && rowShakha !== filters.shk) return false;
     }
 
     if (dateFrom || dateTo) {
@@ -3704,7 +3728,7 @@ function renderActivity() {
   });
 
   // Update status badge to reflect current filtered count
-  const isFiltered = filters.name || filters.act || filters.age || filters.location ||
+  const isFiltered = filters.name || filters.act || filters.age ||
                      filters.shk || filters.dateFrom || filters.dateTo;
   document.getElementById('actStatusBadge').textContent = isFiltered
     ? `FILTERED · ${filtered.length} ENTRIES`
