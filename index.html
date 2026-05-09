@@ -2043,6 +2043,167 @@ input[type="date"].mob-filter-control::-webkit-calendar-picker-indicator {
 
 @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
 
+/* ═══════════════════════════════════════════════
+   INDIVIDUAL ACTIVITY HISTORY
+   (visible only when the Participant filter narrows to one person)
+═══════════════════════════════════════════════ */
+.ih-card {
+  display: none;
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 26px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.ih-card.visible { display: block; }
+.ih-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 4px; height: 100%;
+  background: linear-gradient(180deg, var(--saffron), var(--gold));
+}
+.ih-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.ih-head-left { min-width: 0; }
+.ih-eyebrow {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.3px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.ih-eyebrow em {
+  font-style: normal;
+  color: var(--saffron);
+}
+.ih-name {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-white);
+  letter-spacing: 0.4px;
+  line-height: 1.1;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ih-meta {
+  font-size: 12.5px;
+  color: var(--text-light);
+}
+.ih-total-pill {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--gold);
+  background: rgba(245,166,35,0.1);
+  border: 1px solid rgba(245,166,35,0.35);
+  border-radius: 999px;
+  padding: 6px 22px;
+  flex-shrink: 0;
+}
+.ih-total-pill .ih-total-lbl {
+  font-family: 'Outfit', sans-serif;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 1.3px;
+  color: var(--text-muted);
+  margin-right: 10px;
+  text-transform: uppercase;
+}
+.ih-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.ih-group {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+}
+.ih-group-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  margin-bottom: 10px;
+  border-bottom: 1px dashed var(--border);
+}
+.ih-group-icon {
+  font-size: 22px;
+  width: 36px; height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,153,51,0.1);
+  border: 1px solid rgba(255,153,51,0.25);
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+.ih-group-name {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-white);
+  letter-spacing: 0.2px;
+}
+.ih-group-stats {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--saffron);
+  background: rgba(255,153,51,0.1);
+  border: 1px solid rgba(255,153,51,0.3);
+  padding: 3px 12px;
+  border-radius: 999px;
+}
+.ih-sessions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 6px 18px;
+}
+.ih-session {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  transition: background 0.15s ease;
+}
+.ih-session:hover { background: rgba(255,255,255,0.04); }
+.ih-session-date {
+  color: var(--text-light);
+  font-family: 'Menlo', 'Consolas', monospace;
+  font-size: 12px;
+}
+.ih-session-km {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  color: var(--text-white);
+  font-size: 13px;
+}
+@media (max-width: 768px) {
+  .ih-card { padding: 18px 18px; }
+  .ih-name { font-size: 22px; }
+  .ih-total-pill { font-size: 20px; padding: 4px 16px; }
+  .ih-sessions { grid-template-columns: 1fr; }
+}
+
 /* Leaderboard rows */
 .act-boards-grid {
   display: grid;
@@ -2709,6 +2870,21 @@ input[type="date"].mob-filter-control::-webkit-calendar-picker-indicator {
     <div id="act-loader" class="act-loading">Loading activity data…</div>
 
     <div id="act-content" style="display:none;">
+
+      <!-- Individual Activity History (visible only when Participant filter resolves to one person) -->
+      <div class="ih-card" id="ihCard">
+        <div class="ih-head">
+          <div class="ih-head-left">
+            <div class="ih-eyebrow">👤 <em>Activity</em> History</div>
+            <div class="ih-name" id="ihName">—</div>
+            <div class="ih-meta" id="ihMeta">—</div>
+          </div>
+          <div class="ih-total-pill">
+            <span class="ih-total-lbl">Total</span><span id="ihTotal">0 km</span>
+          </div>
+        </div>
+        <div class="ih-groups" id="ihGroups"></div>
+      </div>
 
       <!-- Leaderboards -->
       <div class="act-boards-grid">
@@ -3947,7 +4123,109 @@ function renderActivity() {
   renderActBoard('lb-shakha',  filtered, ACT_KEYS.shakha,  'amber');
   renderActBoard('lb-country', filtered, ACT_KEYS.country, 'green');
   updateActGraphs(filtered);
+  renderIndividualHistory(filtered);
   updateChipsBar();
+}
+
+// ── Individual Activity History ─────────────────────────────────────
+// Visible only when the Participant text filter narrows the dataset to
+// rows belonging to a single individual. Lists every activity grouped
+// by activity type, with a per-type total and a per-session date+km row.
+function renderIndividualHistory(filtered) {
+  const card = document.getElementById('ihCard');
+  if (!card) return;
+
+  const filterName = (document.getElementById('f-name')?.value || '').trim();
+
+  // Quick reject: no name typed, or no rows match
+  if (!filterName || filtered.length === 0) {
+    card.classList.remove('visible');
+    return;
+  }
+
+  // Detect that the filter resolves to EXACTLY ONE individual.
+  // The Participant filter is a substring match, so a query like "ali" might
+  // match both "Alice" and "Aliya" — in that case we keep the card hidden.
+  const uniqueNames = new Set(
+    filtered.map(r => String(r[ACT_KEYS.name] ?? '').trim()).filter(Boolean)
+  );
+  if (uniqueNames.size !== 1) {
+    card.classList.remove('visible');
+    return;
+  }
+  const name = [...uniqueNames][0];
+  if (!name) { card.classList.remove('visible'); return; }
+
+  // Identity meta — pull shakha + country from the first matching row
+  const sample = filtered[0];
+  const shakha  = String(sample[ACT_KEYS.shakha]  ?? '').trim();
+  const country = String(sample[ACT_KEYS.country] ?? '').trim();
+  const total = filtered.reduce((s, r) => s + (parseFloat(r[ACT_KEYS.count]) || 0), 0);
+
+  // Group sessions by EXACT activity name (preserves whatever the sheet uses)
+  const byActivity = {};
+  filtered.forEach(r => {
+    const act = String(r[ACT_KEYS.activity] ?? '').trim() || 'Other';
+    if (!byActivity[act]) byActivity[act] = { sessions: [], total: 0 };
+    const km = parseFloat(r[ACT_KEYS.count]) || 0;
+    byActivity[act].sessions.push({
+      dateKey:     dayKey(r[ACT_KEYS.date]) || '',
+      dateDisplay: fmtDDMMYYYY(r[ACT_KEYS.date]) || '—',
+      km
+    });
+    byActivity[act].total += km;
+  });
+
+  // Sort sessions newest-first within each activity
+  Object.values(byActivity).forEach(g => {
+    g.sessions.sort((a, b) => (b.dateKey || '').localeCompare(a.dateKey || ''));
+  });
+
+  // Order activity-type sections by total km descending (most-done first)
+  const groupsSorted = Object.entries(byActivity).sort((a, b) => b[1].total - a[1].total);
+
+  // Pick a recognisable emoji for known activity families; default 🎯
+  const iconFor = (act) => {
+    const s = act.toLowerCase();
+    if (/run|jog/.test(s))           return '🏃';
+    if (/cycle|bike|bicycl/.test(s)) return '🚴';
+    if (/walk|hike|trek/.test(s))    return '🚶';
+    if (/swim/.test(s))              return '🏊';
+    if (/yoga|asana|pranayam/.test(s)) return '🧘';
+    if (/medit/.test(s))             return '🪷';
+    return '🎯';
+  };
+
+  // Populate header
+  document.getElementById('ihName').textContent = name;
+  document.getElementById('ihTotal').textContent =
+    total.toLocaleString(undefined, { maximumFractionDigits: 1 }) + ' km';
+  const metaParts = [];
+  if (shakha)  metaParts.push(shakha);
+  if (country) metaParts.push(country);
+  metaParts.push(filtered.length + ' session' + (filtered.length === 1 ? '' : 's'));
+  document.getElementById('ihMeta').textContent = metaParts.join(' · ');
+
+  // Render groups
+  document.getElementById('ihGroups').innerHTML = groupsSorted.map(([act, g]) => {
+    const sessionsHtml = g.sessions.map(s => `
+      <div class="ih-session">
+        <span class="ih-session-date">${escapeHtml(s.dateDisplay)}</span>
+        <span class="ih-session-km">${s.km.toFixed(1)} km</span>
+      </div>`).join('');
+    const sessLabel = g.sessions.length === 1 ? 'session' : 'sessions';
+    return `
+      <div class="ih-group">
+        <div class="ih-group-head">
+          <span class="ih-group-icon">${iconFor(act)}</span>
+          <span class="ih-group-name">${escapeHtml(act)}</span>
+          <span class="ih-group-stats">${g.total.toFixed(1)} km · ${g.sessions.length} ${sessLabel}</span>
+        </div>
+        <div class="ih-sessions">${sessionsHtml}</div>
+      </div>`;
+  }).join('');
+
+  card.classList.add('visible');
 }
 
 // Flexible date parser: YYYY-MM-DD, DD/MM/YYYY, MM/DD/YYYY, Google Sheets timestamps
