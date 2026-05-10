@@ -951,6 +951,228 @@ body::before {
 }
 
 /* ═══════════════════════════════════════════════
+   SLIDE BANNER (fetched from Google Slides via Apps Script)
+═══════════════════════════════════════════════ */
+.slide-banner {
+  display: none;
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 22px;
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  min-height: 80px;
+}
+.slide-banner.visible { display: block; }
+.slide-banner.has-link { cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.slide-banner.has-link:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(0,0,0,0.35); }
+
+/* Image-only mode (most common: slide rendered as PNG) */
+.slide-banner-img {
+  display: block;
+  width: 100%;
+  max-height: 420px;
+  object-fit: contain;
+  background: var(--navy-mid);
+}
+
+/* Text-overlay mode (when JSON returns title/body) */
+.slide-banner-text {
+  padding: 28px 32px;
+  background: linear-gradient(135deg, var(--navy-mid) 0%, var(--navy-card) 100%);
+  position: relative;
+}
+.slide-banner-text::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 4px; height: 100%;
+  background: linear-gradient(180deg, var(--saffron), var(--gold));
+}
+.slide-banner-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-white);
+  letter-spacing: 0.4px;
+  line-height: 1.15;
+  margin-bottom: 8px;
+}
+.slide-banner-title em {
+  font-style: normal;
+  background: linear-gradient(90deg, var(--saffron), var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.slide-banner-subtitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--saffron);
+  letter-spacing: 0.3px;
+  margin-bottom: 10px;
+}
+.slide-banner-body {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-light);
+  max-width: 720px;
+}
+.slide-banner-body p { margin: 0 0 8px 0; }
+.slide-banner-body p:last-child { margin-bottom: 0; }
+.slide-banner-body a {
+  color: var(--saffron);
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(255,153,51,0.4);
+}
+
+/* Combined: image + text side-by-side on desktop, stacked on mobile */
+.slide-banner-combo {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) 1fr;
+  gap: 0;
+}
+.slide-banner-combo .slide-banner-img {
+  max-height: 280px;
+  border-radius: 0;
+}
+.slide-banner-combo .slide-banner-text {
+  padding: 24px 28px;
+}
+
+/* Loading shimmer while fetching */
+.slide-banner-loading {
+  height: 120px;
+  background: linear-gradient(90deg, var(--navy-card) 25%, var(--navy-light) 50%, var(--navy-card) 75%);
+  background-size: 200% 100%;
+  animation: slide-shimmer 1.5s linear infinite;
+}
+@keyframes slide-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ─── Carousel mode (when response contains multiple slides) ─── */
+.slide-banner-carousel {
+  position: relative;
+}
+.slide-banner-track {
+  display: flex;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+.slide-banner-slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  max-width: 100%;
+  position: relative;
+}
+.slide-banner-slide .slide-banner-img {
+  display: block;
+  width: 100%;
+  max-height: 460px;
+  object-fit: contain;
+  background: var(--navy-mid);
+}
+.slide-banner-slide .slide-banner-text {
+  padding: 24px 30px;
+  background: linear-gradient(135deg, var(--navy-mid) 0%, var(--navy-card) 100%);
+  position: relative;
+}
+.slide-banner-slide .slide-banner-text::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 4px; height: 100%;
+  background: linear-gradient(180deg, var(--saffron), var(--gold));
+}
+
+/* Arrows */
+.slide-banner-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.55);
+  color: var(--text-white);
+  border: 1px solid rgba(255,255,255,0.18);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, transform 0.15s ease;
+  font-family: inherit;
+  user-select: none;
+}
+.slide-banner-arrow:hover { background: rgba(0,0,0,0.8); transform: translateY(-50%) scale(1.08); }
+.slide-banner-arrow.prev { left: 12px; }
+.slide-banner-arrow.next { right: 12px; }
+
+/* Dots */
+.slide-banner-dots {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 7px;
+  z-index: 3;
+  background: rgba(0,0,0,0.45);
+  padding: 6px 12px;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+}
+.slide-banner-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.4);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  padding: 0;
+}
+.slide-banner-dot.active {
+  background: var(--gold);
+  width: 22px;
+  border-radius: 999px;
+}
+
+/* Slide counter */
+.slide-banner-counter {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(0,0,0,0.55);
+  color: var(--text-white);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.5px;
+  z-index: 3;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+@media (max-width: 768px) {
+  .slide-banner-img { max-height: 240px; }
+  .slide-banner-text { padding: 20px 22px; }
+  .slide-banner-title { font-size: 22px; }
+  .slide-banner-combo { grid-template-columns: 1fr; }
+  .slide-banner-combo .slide-banner-img { max-height: 220px; }
+  .slide-banner-arrow { width: 32px; height: 32px; font-size: 15px; }
+  .slide-banner-arrow.prev { left: 6px; }
+  .slide-banner-arrow.next { right: 6px; }
+  .slide-banner-slide .slide-banner-img { max-height: 320px; }
+}
+
+/* ═══════════════════════════════════════════════
    HOT STREAKS TAB
 ═══════════════════════════════════════════════ */
 .streaks-intro {
@@ -2968,6 +3190,9 @@ input[type="date"].mob-filter-control::-webkit-calendar-picker-indicator {
     <span class="ann-marquee-track" id="annMarqueeText">Loading announcements...</span>
   </div>
 
+  <!-- Slide-driven banner (content fetched from a Google Slide via Apps Script) -->
+  <div class="slide-banner" id="slideBanner" aria-label="Featured banner"></div>
+
   <!-- Hot Streaks intro -->
   <div class="streaks-intro">
     <h2 class="streaks-title">🔥 Hot <em>Streaks</em></h2>
@@ -4376,8 +4601,16 @@ const ANN_API = "https://script.google.com/macros/s/AKfycbzZz5OqAWelMOc75BS2y0UG
 const ANN_REFRESH_MS = 5 * 60 * 1000; // 5 minutes — matches the source HTML cadence
 const STREAK_START_MONTH = 4;  // May (0-indexed)
 const STREAK_START_DAY   = 1;
+
+// Slide banner: pulled directly from a Google Slides "export/png" URL.
+// The slide must be shared publicly (Anyone with the link → Viewer) so the
+// browser can fetch it without authentication.
+const SLIDE_BANNER_IMAGE_URL = "https://docs.google.com/presentation/d/1jp1kR079nA_Gi0VqQcEv_pH0ZI0BpNaAo-u1hfaRFo8/export/png?id=1jp1kR079nA_Gi0VqQcEv_pH0ZI0BpNaAo-u1hfaRFo8&pageid=g3e07da15811_0_0";
+const SLIDE_BANNER_REFRESH_MS = 5 * 60 * 1000;
+
 let streaksLoaded = false;
 let annTimer  = null;
+let slideBannerTimer = null;
 
 function initStreaks() {
   streaksLoaded = true;
@@ -4385,12 +4618,37 @@ function initStreaks() {
   fetchAnnouncements(false);
   if (annTimer) clearInterval(annTimer);
   annTimer = setInterval(() => fetchAnnouncements(false), ANN_REFRESH_MS);
+  // Slide banner: fetch + auto-refresh
+  fetchSlideBanner();
+  if (slideBannerTimer) clearInterval(slideBannerTimer);
+  slideBannerTimer = setInterval(fetchSlideBanner, SLIDE_BANNER_REFRESH_MS);
   // Build the activity-type filter chip bar (idempotent)
   buildTypeFilterBar();
   // Streak lists: render now if data is available; otherwise the
   // initActivity success path will call renderHotStreaks() once data arrives.
   renderHotStreaks();
 }
+
+// ── Slide Banner ─────────────────────────────────────────────────────
+// Fetches a Google Slide rendition (via Apps Script) and renders it as
+// Slide Banner — loads the slide PNG directly from the Google Slides
+// "export/png" URL. The image is requested via a normal <img> tag, so
+// CORS doesn't apply. The slide must be shared as "Anyone with the link".
+// We append a cache-busting timestamp on each refresh so edits to the slide
+// show up without forcing a hard browser reload.
+function fetchSlideBanner() {
+  const el = document.getElementById('slideBanner');
+  if (!el) return;
+
+  const sep = SLIDE_BANNER_IMAGE_URL.includes('?') ? '&' : '?';
+  const src = SLIDE_BANNER_IMAGE_URL + sep + '_t=' + Date.now();
+
+  el.innerHTML =
+    '<img class="slide-banner-img" src="' + src + '" alt="Featured slide" ' +
+    'onerror="document.getElementById(\'slideBanner\').classList.remove(\'visible\')">';
+  el.classList.add('visible');
+}
+
 
 // ── Announcement marquee fetcher (kept; only the body card was removed) ──
 async function fetchAnnouncements(isManual) {
