@@ -4182,6 +4182,16 @@ function populateActShakhaSelect(elId) {
     const countryName = COUNTRY_NAMES[cc] || cc;
     const grp = document.createElement('optgroup');
     grp.label = `${countryName} (${cc})`;
+
+    // First option in each group: "All [Country]" — selects every shakha
+    // in that country. Value is namespaced with a "country:" prefix so the
+    // filter logic can distinguish it from a single shakha code.
+    const allOpt = document.createElement('option');
+    allOpt.value = 'country:' + cc;
+    const numShakhas = byCountry[cc].length;
+    allOpt.textContent = `🌍 All ${countryName} (${numShakhas} shakha${numShakhas === 1 ? '' : 's'})`;
+    grp.appendChild(allOpt);
+
     byCountry[cc]
       .sort((a, b) => parseInt(a.code) - parseInt(b.code))
       .forEach(({ code, name }) => {
@@ -4235,7 +4245,14 @@ function updateChipsBar() {
     { id: 'f-name',      label: v => `"${v}"` },
     { id: 'f-activity',  label: v => v },
     { id: 'f-age',       label: v => v },
-    { id: 'f-shakha',    label: v => `🏛 ${SHAKHA_MAP[v]?.name || v}` },
+    { id: 'f-shakha',    label: v => {
+        if (typeof v === 'string' && v.startsWith('country:')) {
+          const cc = v.slice(8);
+          return '🌍 All ' + (COUNTRY_NAMES[cc] || cc);
+        }
+        return '🏛 ' + (SHAKHA_MAP[v]?.name || v);
+      }
+    },
     { id: 'f-date-from', label: v => `From ${fmtDDMMYYYY(v)}` },
     { id: 'f-date-to',   label: v => `To ${fmtDDMMYYYY(v)}` },
   ];
@@ -4299,10 +4316,15 @@ function renderActivity() {
     dateTo:   document.getElementById('f-date-to').value
   };
 
-  // Resolve the selected shakha code → expected name in the activity sheet.
-  // Activity rows store free-text Shakha Name, so we compare against
-  // SHAKHA_MAP[code].name. Fall back to code matching if the row stores codes.
-  const expectedShakhaName = filters.shk ? (SHAKHA_MAP[filters.shk]?.name || '') : '';
+  // The shakha filter value can be either a shakha code (e.g. "2") OR a
+  // country namespace ("country:AT") — when a user picks "🌍 All Austria"
+  // from the dropdown we filter by country rather than by a single shakha.
+  const isCountryFilter = filters.shk && filters.shk.startsWith('country:');
+  const filterCountryCode = isCountryFilter ? filters.shk.slice(8) : '';
+  const filterCountryName = isCountryFilter ? (COUNTRY_NAMES[filterCountryCode] || '').toLowerCase() : '';
+  const expectedShakhaName = (filters.shk && !isCountryFilter)
+    ? (SHAKHA_MAP[filters.shk]?.name || '')
+    : '';
 
   // Detect date column once from first row that has one
   let detectedDateKey = ACT_KEYS.date;
@@ -4319,9 +4341,27 @@ function renderActivity() {
     if (filters.age  && String(r[ACT_KEYS.age]      ?? "") !== filters.age) return false;
 
     if (filters.shk) {
-      const rowShakha = String(r[ACT_KEYS.shakha] ?? '').trim();
-      // Primary: name match via SHAKHA_MAP. Secondary: row stores the code itself.
-      if (rowShakha !== expectedShakhaName && rowShakha !== filters.shk) return false;
+      if (isCountryFilter) {
+        // Country filter: match on the row's Country field. Activity rows may
+        // store either the country code ("AT") or the full name ("Austria"),
+        // so accept either form.
+        const rowCountry = String(r[ACT_KEYS.country] ?? '').trim();
+        if (rowCountry !== filterCountryCode &&
+            rowCountry.toLowerCase() !== filterCountryName) {
+          // Fallback: resolve via SHAKHA_MAP. If the row's shakha is one of
+          // the shakhas in this country, accept it even when Country field
+          // is empty/malformed.
+          const rowShakha = String(r[ACT_KEYS.shakha] ?? '').trim();
+          const shakhaInCountry = Object.values(SHAKHA_MAP).some(
+            s => s.country === filterCountryCode && s.name === rowShakha
+          );
+          if (!shakhaInCountry) return false;
+        }
+      } else {
+        const rowShakha = String(r[ACT_KEYS.shakha] ?? '').trim();
+        // Primary: name match via SHAKHA_MAP. Secondary: row stores the code itself.
+        if (rowShakha !== expectedShakhaName && rowShakha !== filters.shk) return false;
+      }
     }
 
     if (dateFrom || dateTo) {
