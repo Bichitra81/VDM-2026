@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>VDM 2026 · Vishwa Dharma Marathon</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<title>VDM 2026 · Vishwa Dharma Marathon · v12</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
@@ -4487,6 +4490,80 @@ const ACT_KEYS = {
   date: "Date"
 };
 
+// ── resolveActivityDate: single function for all date formats ────────
+// The sheet has 3 date storage types depending on how/when data was entered:
+//   1. "DD/MM/YYYY" text strings (most rows, May 7+) — correct
+//   2. Integer serial numbers (early rows May 1-6) — Sheets stored MM/DD as date
+//      e.g. user typed "01/05/2026", Sheets read as Jan 5 → serial 46027
+//      Fix: convert serial → date → swap month/day to recover original DD/MM
+//   3. Blank/empty — skip
+// Returns "YYYY-MM-DD" within May-Jun 2026, or null.
+function resolveActivityDate(raw) {
+  if (raw === null || raw === undefined || raw === '') return null;
+
+  // ── Integer serial number (Sheets date cell stored as number) ─────
+  // User typed DD/MM/YYYY; Sheets (US locale) stored as MM/DD date object.
+  // So serial's stored month = intended day, stored day = intended month.
+  // ALWAYS swap to recover DD/MM intent; fall back to as-is if swap out of range.
+  const num = Number(raw);
+  if (!isNaN(num) && num > 40000 && num < 50000) {
+    // Convert Sheets serial to date (epoch = Dec 30, 1899)
+    const epoch = new Date(1899, 11, 30);
+    const d = new Date(epoch.getTime() + num * 86400000);
+    const yr = d.getFullYear();
+    const mo = d.getMonth() + 1;   // this is actually the INTENDED DAY (Sheets swapped)
+    const dy = d.getDate();         // this is actually the INTENDED MONTH
+    // Swap back: intended date = yr / dy (month) / mo (day)
+    if (dy >= 1 && dy <= 12 && mo >= 1 && mo <= 31) {
+      const swapped = yr + '-' + String(dy).padStart(2,'0') + '-' + String(mo).padStart(2,'0');
+      if (swapped >= '2026-05-01' && swapped <= '2026-06-30') return swapped;
+    }
+    // Swap not valid — try as-is (e.g. serial 46147 = May 5, symmetric)
+    const dk = yr + '-' + String(mo).padStart(2,'0') + '-' + String(dy).padStart(2,'0');
+    if (dk >= '2026-05-01' && dk <= '2026-06-30') return dk;
+    return null;
+  }
+
+  const s = String(raw).trim();
+  if (!s) return null;
+
+  // ── Full ISO timestamp "2026-01-04T23:00:00.000Z" ─────────────────
+  if (/^\d{4}-\d{2}-\d{2}T/.test(s)) {
+    const ts = new Date(s);
+    const local = new Date(ts.getTime() + 60 * 60 * 1000); // UTC+1
+    const yr = local.getUTCFullYear();
+    const mo = local.getUTCMonth() + 1;
+    const dy = local.getUTCDate();
+    const dk = yr + '-' + String(mo).padStart(2,'0') + '-' + String(dy).padStart(2,'0');
+    if (dk >= '2026-05-01' && dk <= '2026-06-30') return dk;
+    const sw = yr + '-' + String(dy).padStart(2,'0') + '-' + String(mo).padStart(2,'0');
+    if (sw >= '2026-05-01' && sw <= '2026-06-30') return sw;
+    return null;
+  }
+
+  // ── Plain ISO date "YYYY-MM-DD" ────────────────────────────────────
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    if (s >= '2026-05-01' && s <= '2026-06-30') return s;
+    const p = s.split('-');
+    const sw = p[0] + '-' + p[2] + '-' + p[1];
+    if (sw >= '2026-05-01' && sw <= '2026-06-30') return sw;
+    return null;
+  }
+
+  // ── Slash-separated: DD/MM/YYYY (primary) or MM/DD/YYYY ───────────
+  const p = s.split('/');
+  if (p.length === 3 && p[2].length === 4) {
+    const a = p[0], b = p[1], yr = p[2];
+    const k1 = yr + '-' + b.padStart(2,'0') + '-' + a.padStart(2,'0'); // DD/MM
+    const k2 = yr + '-' + a.padStart(2,'0') + '-' + b.padStart(2,'0'); // MM/DD
+    if (k1 >= '2026-05-01' && k1 <= '2026-06-30') return k1;
+    if (k2 >= '2026-05-01' && k2 <= '2026-06-30') return k2;
+    return null;
+  }
+
+  return null;
+}
+
 const ACT_COLORS = {
   blue:'#4D9DE0', amber:'#F5A623', green:'#06D6A0',
   text:'#7A96BC', grid:'rgba(255,255,255,0.04)'
@@ -4495,6 +4572,9 @@ const ACT_COLORS = {
 let actRawData = [];
 let countryChart, shakhaChart, ageChart;
 let actLoaded = false;
+// Auto-detected activity-date column name — set once in ptAutoDetectDateKey()
+// and reused everywhere (streaks, progress tracker, individual history).
+let resolvedActDateKey = ACT_KEYS.date;
 
 // Global retry — reloads the page cleanly
 function vdmRetryAll() {
@@ -4514,10 +4594,10 @@ async function initActivity() {
   // Dataset filter: only Walking, Running, Cycling, Swimming (Count ≤ 50).
   // Defined here (function scope) so both the live-API path and the demo
   // fallback in the catch block can share the same regex.
-  const _ALLOWED_TYPES_RE = /\b(running|runs?|jog(ging)?|cycling|cycle|biking|bike|bicycl(e|ing)|walking|walks?|hike|hiking|trek|swimming|swims?|swam)\b/i;
+  const _ALLOWED_TYPES_RE = /^(Walking \(in KM\)|Running \(in KM\)|Cycling \(in KM\)|Swimming \(in KM\))$/;
 
   try {
-    const res = await fetch(ACT_API);
+    const res = await fetch(ACT_API + '?v=12&_t=' + Date.now(), { cache: 'no-store' });
     if (!res.ok) {
       throw new Error('HTTP ' + res.status + ' ' + res.statusText +
         ' — endpoint is not returning a successful response');
@@ -4542,14 +4622,47 @@ async function initActivity() {
     }
 
     const totalRowsBeforeFilter = json.length;
+
+    // ── Debug: log first row keys and date-like field values to console ──
+    if (json.length > 0) {
+      const sample = json[0];
+      const keys = Object.keys(sample);
+      console.log('[VDM API] Column names:', keys.join(' | '));
+      // Log all fields containing "date" (case-insensitive) from first row
+      keys.filter(k => /date/i.test(k)).forEach(k => {
+        console.log('[VDM API] Date-like field:', k, '=', JSON.stringify(sample[k]));
+      });
+      // Also log Count and Activity fields so we can verify column mapping
+      console.log('[VDM API] Sample row — Activity:', sample[ACT_KEYS.activity],
+                  '| Count:', sample[ACT_KEYS.count],
+                  '| Date:', sample[ACT_KEYS.date]);
+    }
+
+    // ── CLEAN FILTER v7 ─────────────────────────────────────────────
+    // Confirmed from API inspector: Date=string "DD/MM/YYYY", Activity=exact string, Count=number
+    const _VALID_ACTIVITIES = new Set([
+      'Walking (in KM)', 'Running (in KM)', 'Cycling (in KM)', 'Swimming (in KM)'
+    ]);
     actRawData = json.filter(row => {
-      const sh = String(row[ACT_KEYS.shakha]   ?? '').trim();
-      const ac = String(row[ACT_KEYS.activity] ?? '');
-      const km = parseFloat(row[ACT_KEYS.count]);
-      if (!isNaN(km) && km > 50) return false;
-      if (sh === '') return false;
-      return _ALLOWED_TYPES_RE.test(ac);
+      // 1. Activity must be exactly one of the 4 allowed names
+      const ac = String(row[ACT_KEYS.activity] ?? '').trim();
+      if (!_VALID_ACTIVITIES.has(ac)) return false;
+      // 2. Count must be a valid number > 0 and <= 50
+      const km = Number(row[ACT_KEYS.count]);
+      if (!isFinite(km) || km <= 0 || km > 50) return false;
+      // 3. Must have a Shakha name
+      const sh = String(row[ACT_KEYS.shakha] ?? '').trim();
+      if (!sh) return false;
+      // 4. Date must resolve within event window
+      if (!resolveActivityDate(row[ACT_KEYS.date])) return false;
+      return true;
     });
+    console.log('[VDM v7] Filter complete:', actRawData.length, 'rows included from', json.length, 'total');
+    // Log sample to verify
+    if (actRawData.length > 0) {
+      const s = actRawData[0];
+      console.log('[VDM v7] Sample row — Date:', s[ACT_KEYS.date], '| Activity:', s[ACT_KEYS.activity], '| Count:', s[ACT_KEYS.count]);
+    }
 
     if (totalRowsBeforeFilter > 0 && actRawData.length === 0) {
       const sampleKeys = Object.keys(json[0] || {});
@@ -4565,6 +4678,7 @@ async function initActivity() {
 
     _usingDemoData = false;
     actLoaded = true;
+    ptAutoDetectDateKey();
     document.getElementById('appLoader').classList.add('hidden');
     document.getElementById('appLoader').style.display = 'none';
     document.getElementById('actStatusBadge').textContent = 'LIVE · ' + actRawData.length + ' ENTRIES';
@@ -4579,16 +4693,19 @@ async function initActivity() {
 
     // ── Fallback: embedded demo data ────────────────────────────────
     try {
+      const _VALID_ACTS2 = new Set(['Walking (in KM)','Running (in KM)','Cycling (in KM)','Swimming (in KM)']);
       actRawData = DEMO_ACT_DATA.filter(row => {
-        const sh = String(row[ACT_KEYS.shakha]   ?? '').trim();
-        const ac = String(row[ACT_KEYS.activity] ?? '');
-        const km = parseFloat(row[ACT_KEYS.count]);
-        if (!isNaN(km) && km > 50) return false;
-        if (sh === '') return false;
-        return _ALLOWED_TYPES_RE.test(ac);
+        const ac = String(row[ACT_KEYS.activity] ?? '').trim();
+        if (!_VALID_ACTS2.has(ac)) return false;
+        const km = Number(row[ACT_KEYS.count]);
+        if (!isFinite(km) || km <= 0 || km > 50) return false;
+        const sh = String(row[ACT_KEYS.shakha] ?? '').trim();
+        if (!sh) return false;
+        return true;
       });
       _usingDemoData = true;
       actLoaded = true;
+      ptAutoDetectDateKey();
       document.getElementById('appLoader').classList.add('hidden');
       document.getElementById('appLoader').style.display = 'none';
       document.getElementById('actStatusBadge').textContent = 'DEMO · ' + actRawData.length + ' ENTRIES';
@@ -4881,7 +4998,7 @@ function renderActivity() {
     : '';
 
   // Detect date column once from first row that has one
-  let detectedDateKey = ACT_KEYS.date;
+  let detectedDateKey = resolvedActDateKey;
   if (actRawData.length > 0 && !actRawData[0].hasOwnProperty(detectedDateKey)) {
     detectedDateKey = Object.keys(actRawData[0]).find(k => /date|time|when/i.test(k)) || null;
   }
@@ -4988,8 +5105,8 @@ function renderIndividualHistory(filtered) {
     if (!byActivity[act]) byActivity[act] = { sessions: [], total: 0 };
     const km = parseFloat(r[ACT_KEYS.count]) || 0;
     byActivity[act].sessions.push({
-      dateKey:     dayKey(r[ACT_KEYS.date]) || '',
-      dateDisplay: fmtDDMMYYYY(r[ACT_KEYS.date]) || '—',
+      dateKey:     dayKey(r[resolvedActDateKey]) || '',
+      dateDisplay: fmtDDMMYYYY(r[resolvedActDateKey]) || '—',
       km
     });
     byActivity[act].total += km;
@@ -5060,12 +5177,12 @@ function parseFlexDate(val) {
   const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (iso) return new Date(+iso[1], +iso[2] - 1, +iso[3]);
 
-  // DD/MM/YYYY or DD-MM-YYYY — strictly treated as day/month/year
-  const dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  // DD/MM/YYYY — strict European format (spec requirement)
+  const dmy = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (dmy) {
-    const d = +dmy[1], mo = +dmy[2], yr = +dmy[3];
-    if (mo >= 1 && mo <= 12 && d >= 1 && d <= 31) return new Date(yr, mo - 1, d);
-    return null; // malformed — refuse to silently swap to MDY
+    const day = +dmy[1], mo = +dmy[2], yr = +dmy[3];
+    if (mo >= 1 && mo <= 12 && day >= 1 && day <= 31) return new Date(yr, mo - 1, day);
+    return null;
   }
 
   // Google Sheets serial number (days since 1899-12-30)
@@ -5277,18 +5394,25 @@ function htmlToPlainText(html) {
 // Maps an activity-name string to one of four marathon types.
 // Uses regex-with-word-boundaries to handle variants like "Running 5K",
 // "Cycle ride", "Bicycling", "Brisk walk", "Swim 1km", etc.
+// Exact activity name → type mapping (spec: only these 4 names are valid)
+const ACTIVITY_NAME_TO_TYPE = {
+  'Walking (in KM)':  'Walking',
+  'Running (in KM)':  'Running',
+  'Cycling (in KM)':  'Cycling',
+  'Swimming (in KM)': 'Swimming',
+};
+
 const ACTIVITY_TYPES = [
-  { id:'Running',  label:'🏃 Running',  color:'#E8571A', regex:/\b(running|runs?|jog(ging)?)\b/i },
-  { id:'Cycling',  label:'🚴 Cycling',  color:'#4D9DE0', regex:/\b(cycling|cycle|biking|bike|bicycl(e|ing))\b/i },
-  { id:'Walking',  label:'🚶 Walking',  color:'#06D6A0', regex:/\b(walking|walks?|hike|hiking|trek)\b/i },
-  { id:'Swimming', label:'🏊 Swimming', color:'#38BDF8', regex:/\b(swimming|swims?|swam)\b/i },
+  { id:'Running',  label:'🏃 Running',  color:'#E8571A' },
+  { id:'Cycling',  label:'🚴 Cycling',  color:'#4D9DE0' },
+  { id:'Walking',  label:'🚶 Walking',  color:'#06D6A0' },
+  { id:'Swimming', label:'🏊 Swimming', color:'#38BDF8' },
 ];
 const TYPE_BY_ID = Object.fromEntries(ACTIVITY_TYPES.map(t => [t.id, t]));
 
+// Exact string match — only the 4 allowed names are accepted
 function detectActivityType(activityStr) {
-  const s = String(activityStr || '');
-  for (const t of ACTIVITY_TYPES) if (t.regex.test(s)) return t.id;
-  return null; // unknown / non-marathon-counted (e.g. yoga, meditation)
+  return ACTIVITY_NAME_TO_TYPE[String(activityStr || '').trim()] || null;
 }
 
 // Filter state (single-select). 'All' means union of the 4 types.
@@ -5477,7 +5601,7 @@ function renderTop5Boards() {
       if (type !== currentTypeFilter) return;
     }
 
-    const dKey = dayKey(r[ACT_KEYS.date]);
+    const dKey = dayKey(r[resolvedActDateKey]);
     if (!dKey) return;
     const km = parseFloat(r[ACT_KEYS.count]) || 0;
     const pKey = name + '|||' + shakha;
@@ -5558,33 +5682,29 @@ function fmtDDMMYYYY(input) {
 // string is interpreted as DD/MM/YYYY, never MM/DD/YYYY.
 function dayKey(rawValue) {
   if (rawValue == null || rawValue === '') return null;
-  const s = String(rawValue).trim();
+  // Strip time portion: "07/06/2026 8:14" → "07/06/2026"; "2026-06-07T00:00:00Z" → "2026-06-07"
+  const s = String(rawValue).trim().split(' ')[0].split('T')[0];
 
-  // ISO YYYY-MM-DD (with or without time suffix) — already in target format
+  // ISO YYYY-MM-DD
   if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
 
-  // DD/MM/YYYY or DD-MM-YYYY — strictly treated as day/month/year
-  const dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
-  if (dmy) {
-    const d = +dmy[1], mo = +dmy[2], yr = +dmy[3];
-    if (mo >= 1 && mo <= 12 && d >= 1 && d <= 31) {
-      return yr + '-' + String(mo).padStart(2,'0') + '-' + String(d).padStart(2,'0');
-    }
+  // DD/MM/YYYY (strict European — spec: "07/06/2026 means Day=07, Month=06")
+  // Never swap day/month. If it doesn't match this format, it's invalid.
+  const parts = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (parts) {
+    const day = +parts[1], mo = +parts[2], yr = +parts[3];
+    if (mo >= 1 && mo <= 12 && day >= 1 && day <= 31)
+      return yr + '-' + String(mo).padStart(2,'0') + '-' + String(day).padStart(2,'0');
     return null;
   }
 
-  // Sheets serial number
+  // Google Sheets serial number (days since 1899-12-30)
   if (/^\d{5}$/.test(s)) {
     const epoch = new Date(1899, 11, 30);
     epoch.setDate(epoch.getDate() + parseInt(s, 10));
     return ymd(epoch);
   }
 
-  // Textual fallback — only for non-numeric inputs
-  if (!/^\d/.test(s)) {
-    const d = new Date(s);
-    return isNaN(d) ? null : ymd(d);
-  }
   return null;
 }
 
@@ -5658,7 +5778,7 @@ function renderStreakLists() {
     if (!name) return;
 
     // TZ-safe day extraction: avoids UTC-midnight shifting the calendar day
-    const dateKey = dayKey(r[ACT_KEYS.date]);
+    const dateKey = dayKey(r[resolvedActDateKey]);
     if (!dateKey) return;
 
     const key = name + '|||' + shakha;
@@ -5856,6 +5976,18 @@ function ptGetData() {
   });
 }
 
+// ── Auto-detect which column holds the ACTIVITY date ────────────────
+// Scans every field in a sample of rows and scores each by how well its
+// date values are DISTRIBUTED across the full event window — a field
+// that clusters near "today" (like Last Updated) scores poorly even if
+// its values technically fall inside the event range.
+function ptAutoDetectDateKey() {
+  // Spec: activity dates are in the "Date" column in DD/MM/YYYY format.
+  // No auto-detection needed — use the column name directly.
+  resolvedActDateKey = ACT_KEYS.date; // "Date"
+  console.log('[VDM] Date column: using "' + resolvedActDateKey + '" (DD/MM/YYYY strict)');
+}
+
 // ── Build date axis between event start and today ────────────────────
 function ptBuildDates() {
   const today = new Date(); today.setHours(0,0,0,0);
@@ -5886,10 +6018,10 @@ function ptLinearRegression(arr) {
   return { slope, intercept: my - slope * mx };
 }
 
-// ── Main render entry-point ───────────────────────────────────────────
+// ── Main render entry-point (v8) ─────────────────────────────────────
 function renderProgressTracker() {
-  if (!actLoaded) return;   // wait for activity data
-  if (typeof echarts === 'undefined') return;  // wait for ECharts CDN
+  if (!actLoaded) return;
+  if (typeof echarts === 'undefined') return;
 
   ptPopulateFilters();
 
@@ -5897,34 +6029,34 @@ function renderProgressTracker() {
   const dates = ptBuildDates();
   const today = new Date(); today.setHours(0,0,0,0);
 
-  // ── Build per-day aggregates ──────────────────────────────────────
-  // dailyByType[YYYY-MM-DD] = { Running, Cycling, Walking, Swimming }
+  // ── dailyByType: one bucket per day from May 1 → today ───────────
   const dailyByType = {};
   dates.forEach(d => { dailyByType[d] = { Running: 0, Cycling: 0, Walking: 0, Swimming: 0 }; });
 
-  // ── Compute grandTotal from ALL data rows (not just chart date-range) ──
-  // This ensures the KPI distance matches the Activity Log: any row whose date
-  // falls outside May-1→today is still counted in the total but simply not
-  // plotted on the chart axis.
-  let grandTotal   = 0;
-  let totalEntries = 0;
+  let grandTotal = 0, totalEntries = 0;
 
-  data.forEach(r => {
-    const type = detectActivityType(r[ACT_KEYS.activity]);
+  // ── Aggregation (v8): parse DD/MM/YYYY directly ───────────────────
+  data.forEach(function(r) {
+    var act = (r[ACT_KEYS.activity] || '').toString().trim();
+    var type = ACTIVITY_NAME_TO_TYPE[act];
     if (!type) return;
-    const km = parseFloat(r[ACT_KEYS.count]) || 0;
-    if (km <= 0) return;
 
-    // Every valid row counts toward the grand total
+    var km = parseFloat(r[ACT_KEYS.count]);
+    if (!(km > 0)) return;  // handles NaN, 0, negative
+
     grandTotal   += km;
     totalEntries += 1;
 
-    // Also populate chart buckets for rows that fall on the date axis
-    const dk = dayKey(r[ACT_KEYS.date]);
-    if (dk && dailyByType[dk]) {
-      dailyByType[dk][type] += km;
-    }
+    var dk = resolveActivityDate(r[ACT_KEYS.date]);
+    if (dk && dailyByType[dk]) dailyByType[dk][type] += km;
   });
+
+  console.log('[VDM v8] grandTotal=' + Math.round(grandTotal) + ' entries=' + totalEntries);
+  var firstFew = dates.slice(0,5).map(function(d) {
+    var t = dailyByType[d];
+    return d + '=' + Math.round(t.Walking+t.Running+t.Cycling+t.Swimming) + 'km';
+  });
+  console.log('[VDM v8] May 1-5 daily totals:', firstFew.join(', '));
 
   const dailyTotals = dates.map(d => {
     const t = dailyByType[d];
