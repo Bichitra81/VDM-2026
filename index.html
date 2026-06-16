@@ -4638,15 +4638,15 @@ async function initActivity() {
                   '| Date:', sample[ACT_KEYS.date]);
     }
 
-    // ── CLEAN FILTER v7 ─────────────────────────────────────────────
-    // Confirmed from API inspector: Date=string "DD/MM/YYYY", Activity=exact string, Count=number
-    const _VALID_ACTIVITIES = new Set([
-      'Walking (in KM)', 'Running (in KM)', 'Cycling (in KM)', 'Swimming (in KM)'
-    ]);
+    // ── CLEAN FILTER v8 ─────────────────────────────────────────────
+    // Only Walking, Running, Swimming, Cycling are considered.
+    // Match by keyword (detectActivityType) instead of exact string,
+    // since the sheet uses variants like "Running 5K", "Cycle ride",
+    // "Brisk Walk", etc. rather than the literal "X (in KM)" labels.
     actRawData = json.filter(row => {
-      // 1. Activity must be exactly one of the 4 allowed names
+      // 1. Activity must resolve to one of the 4 allowed types
       const ac = String(row[ACT_KEYS.activity] ?? '').trim();
-      if (!_VALID_ACTIVITIES.has(ac)) return false;
+      if (!detectActivityType(ac)) return false;
       // 2. Count must be a valid number > 0 and <= 50
       const km = Number(row[ACT_KEYS.count]);
       if (!isFinite(km) || km <= 0 || km > 50) return false;
@@ -4657,7 +4657,7 @@ async function initActivity() {
       if (!resolveActivityDate(row[ACT_KEYS.date])) return false;
       return true;
     });
-    console.log('[VDM v7] Filter complete:', actRawData.length, 'rows included from', json.length, 'total');
+    console.log('[VDM v8] Filter complete:', actRawData.length, 'rows included from', json.length, 'total');
     // Log sample to verify
     if (actRawData.length > 0) {
       const s = actRawData[0];
@@ -4693,10 +4693,9 @@ async function initActivity() {
 
     // ── Fallback: embedded demo data ────────────────────────────────
     try {
-      const _VALID_ACTS2 = new Set(['Walking (in KM)','Running (in KM)','Cycling (in KM)','Swimming (in KM)']);
       actRawData = DEMO_ACT_DATA.filter(row => {
         const ac = String(row[ACT_KEYS.activity] ?? '').trim();
-        if (!_VALID_ACTS2.has(ac)) return false;
+        if (!detectActivityType(ac)) return false;
         const km = Number(row[ACT_KEYS.count]);
         if (!isFinite(km) || km <= 0 || km > 50) return false;
         const sh = String(row[ACT_KEYS.shakha] ?? '').trim();
@@ -5106,15 +5105,15 @@ function renderIndividualHistory(filtered) {
     const km = parseFloat(r[ACT_KEYS.count]) || 0;
     byActivity[act].sessions.push({
       dateKey:     dayKey(r[resolvedActDateKey]) || '',
-      dateDisplay: fmtDDMMYYYY(r[resolvedActDateKey]) || '—',
+      dateDisplay: fmtOrdinalDayMonth(r[resolvedActDateKey]) || '—',
       km
     });
     byActivity[act].total += km;
   });
 
-  // Sort sessions newest-first within each activity
+  // Sort sessions chronologically, oldest first (1 May → 30 June)
   Object.values(byActivity).forEach(g => {
-    g.sessions.sort((a, b) => (b.dateKey || '').localeCompare(a.dateKey || ''));
+    g.sessions.sort((a, b) => (a.dateKey || '').localeCompare(b.dateKey || ''));
   });
 
   // Order activity-type sections by total km descending (most-done first)
@@ -5186,10 +5185,19 @@ function parseFlexDate(val) {
   }
 
   // Google Sheets serial number (days since 1899-12-30)
+  // Same locale quirk as resolveActivityDate()/dayKey(): try the DD/MM
+  // swap first; only use it if in the May–June 2026 window, else as-is.
   if (/^\d{5}$/.test(s)) {
     const epoch = new Date(1899, 11, 30);
-    epoch.setDate(epoch.getDate() + parseInt(s, 10));
-    return epoch;
+    const d = new Date(epoch.getTime() + parseInt(s, 10) * 86400000);
+    const yr = d.getFullYear();
+    const mo = d.getMonth() + 1;
+    const dy = d.getDate();
+    if (dy >= 1 && dy <= 12 && mo >= 1 && mo <= 31) {
+      const swappedKey = yr + '-' + String(dy).padStart(2,'0') + '-' + String(mo).padStart(2,'0');
+      if (swappedKey >= '2026-05-01' && swappedKey <= '2026-06-30') return new Date(yr, dy - 1, mo);
+    }
+    return d; // swap not valid/in-range — fall back to as-is
   }
 
   // Textual fallback (e.g. "May 3, 2026") — only for non-numeric inputs,
@@ -5392,15 +5400,17 @@ function htmlToPlainText(html) {
 
 // ── Activity Type Detection ─────────────────────────────────────────
 // Maps an activity-name string to one of four marathon types.
-// Uses regex-with-word-boundaries to handle variants like "Running 5K",
-// "Cycle ride", "Bicycling", "Brisk walk", "Swim 1km", etc.
-// Exact activity name → type mapping (spec: only these 4 names are valid)
-const ACTIVITY_NAME_TO_TYPE = {
-  'Walking (in KM)':  'Walking',
-  'Running (in KM)':  'Running',
-  'Cycling (in KM)':  'Cycling',
-  'Swimming (in KM)': 'Swimming',
-};
+// Keyword-based (not exact-match) so variants like "Running 5K",
+// "Running 10K", "Cycle ride", "Bicycling", "Brisk Walk", "Swim 1km",
+// "Walking (in KM)" etc. all collapse into the right bucket.
+// Only Walking, Running, Swimming, Cycling are considered — anything
+// else returns null and is excluded.
+const ACTIVITY_KEYWORD_RULES = [
+  { re: /walk/i,             type: 'Walking'  },
+  { re: /run|jog|marathon/i, type: 'Running'  },
+  { re: /cycl|bike|bicycl/i, type: 'Cycling'  },
+  { re: /swim/i,             type: 'Swimming' },
+];
 
 const ACTIVITY_TYPES = [
   { id:'Running',  label:'🏃 Running',  color:'#E8571A' },
@@ -5410,9 +5420,15 @@ const ACTIVITY_TYPES = [
 ];
 const TYPE_BY_ID = Object.fromEntries(ACTIVITY_TYPES.map(t => [t.id, t]));
 
-// Exact string match — only the 4 allowed names are accepted
+// Keyword match against the activity-name string — returns one of
+// 'Walking' | 'Running' | 'Cycling' | 'Swimming', or null if none match.
 function detectActivityType(activityStr) {
-  return ACTIVITY_NAME_TO_TYPE[String(activityStr || '').trim()] || null;
+  const s = String(activityStr || '').trim();
+  if (!s) return null;
+  for (const rule of ACTIVITY_KEYWORD_RULES) {
+    if (rule.re.test(s)) return rule.type;
+  }
+  return null;
 }
 
 // Filter state (single-select). 'All' means union of the 4 types.
@@ -5677,7 +5693,30 @@ function fmtDDMMYYYY(input) {
          d.getFullYear();
 }
 
-// Timezone-safe day key extractor → returns "YYYY-MM-DD".
+// Format a date as "1st May", "2nd May", "23rd June" etc. — ordinal day +
+// full month name, no year (event window is May–June 2026 only).
+function fmtOrdinalDayMonth(input) {
+  if (input == null || input === '') return '';
+  let d;
+  if (input && typeof input.getDate === 'function' && typeof input.getMonth === 'function') {
+    d = input;
+  } else {
+    d = parseFlexDate(input);
+  }
+  if (!d || isNaN(d.getTime ? d.getTime() : NaN)) return '';
+  const day = d.getDate();
+  const j = day % 10, k = day % 100;
+  let suffix = 'th';
+  if (k < 11 || k > 13) {
+    if (j === 1) suffix = 'st';
+    else if (j === 2) suffix = 'nd';
+    else if (j === 3) suffix = 'rd';
+  }
+  const month = d.toLocaleDateString('en-US', { month: 'long' });
+  return day + suffix + ' ' + month;
+}
+
+
 // Uses the SAME strict DMY convention as parseFlexDate: any d/m/y or d-m-y
 // string is interpreted as DD/MM/YYYY, never MM/DD/YYYY.
 function dayKey(rawValue) {
@@ -5699,10 +5738,22 @@ function dayKey(rawValue) {
   }
 
   // Google Sheets serial number (days since 1899-12-30)
+  // Same locale quirk as resolveActivityDate(): try the DD/MM swap first;
+  // only accept it if the swapped date falls inside the May–June 2026
+  // event window, otherwise fall back to the unswapped reading.
   if (/^\d{5}$/.test(s)) {
     const epoch = new Date(1899, 11, 30);
-    epoch.setDate(epoch.getDate() + parseInt(s, 10));
-    return ymd(epoch);
+    const d = new Date(epoch.getTime() + parseInt(s, 10) * 86400000);
+    const yr = d.getFullYear();
+    const mo = d.getMonth() + 1;
+    const dy = d.getDate();
+    if (dy >= 1 && dy <= 12 && mo >= 1 && mo <= 31) {
+      const swapped = yr + '-' + String(dy).padStart(2,'0') + '-' + String(mo).padStart(2,'0');
+      if (swapped >= '2026-05-01' && swapped <= '2026-06-30') return swapped;
+    }
+    const asIs = yr + '-' + String(mo).padStart(2,'0') + '-' + String(dy).padStart(2,'0');
+    if (asIs >= '2026-05-01' && asIs <= '2026-06-30') return asIs;
+    return null;
   }
 
   return null;
@@ -6038,7 +6089,7 @@ function renderProgressTracker() {
   // ── Aggregation (v8): parse DD/MM/YYYY directly ───────────────────
   data.forEach(function(r) {
     var act = (r[ACT_KEYS.activity] || '').toString().trim();
-    var type = ACTIVITY_NAME_TO_TYPE[act];
+    var type = detectActivityType(act);
     if (!type) return;
 
     var km = parseFloat(r[ACT_KEYS.count]);
